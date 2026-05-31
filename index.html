@@ -494,32 +494,27 @@
     }
     .story-panel p {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(2.2rem, 9vw, 3.2rem);
+      font-size: clamp(2.8rem, 11vw, 4rem);
       font-weight: 900;
-      line-height: 1.25;
+      line-height: 1.2;
       text-align: center;
       max-width: 460px;
       text-shadow: 0 2px 16px rgba(0,0,0,0.55);
-    }
-    #panel-1 p {
       color: #FFE066;
-    }
-    #panel-2 p {
-      color: #A8E6CF;
-    }
-    #panel-3 p {
-      color: #FF8B94;
     }
 
     /* Scroll down arrow */
     .scroll-indicator {
       position: absolute;
-      bottom: 40px;
+      bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
-      opacity: 1;
+      opacity: 0;
       transition: opacity 0.3s ease;
+    }
+    .scroll-indicator.visible {
+      opacity: 1;
     }
     .scroll-arrow {
       width: 32px;
@@ -527,9 +522,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #ffffff;
-      font-size: 24px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      color: #FFE066;
+      font-size: 28px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      font-weight: 900;
     }
     .story-panel.active {
       opacity: 1;
@@ -802,8 +798,8 @@
       const inStoryRange = p >= 0 && p <= 0.95;
       header.classList.toggle('hidden-during-story', inStoryRange);
 
-      // Hide scroll indicator once user starts scrolling
-      scrollIndicator.style.opacity = p > 0.02 ? '0' : '1';
+      // Show scroll indicator before first text appears (0-0.10), hide after (0.10+)
+      scrollIndicator.classList.toggle('visible', p >= 0 && p <= 0.10);
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
