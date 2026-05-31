@@ -437,7 +437,7 @@
     /* ── STORY / SCROLLYTELLING ── */
     #story {
       position: relative;
-      height: 500vh;
+      height: 600vh;
     }
     #story-stage {
       position: sticky;
@@ -494,7 +494,7 @@
     }
     .story-panel p {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(1.55rem, 7vw, 2.4rem);
+      font-size: clamp(2.2rem, 9vw, 3.2rem);
       font-weight: 900;
       line-height: 1.25;
       text-align: center;
@@ -573,7 +573,7 @@
       <p>Bellavistas es uno de los barrios con menos arbolado de Madrid.</p>
     </div>
     <div class="story-panel" id="panel-2">
-      <p>Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles hasta superar el millar.</p>
+      <p>Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles.</p>
     </div>
     <div class="story-panel" id="panel-3">
       <p>Ayúdanos a hacerlo realidad.</p>
@@ -796,7 +796,7 @@
         panel.classList.toggle('exited', isPast);
       });
 
-      bgAfter.style.opacity = p >= BEATS[2].from ? '1' : '0';
+      bgAfter.style.opacity = p >= 0.75 ? '1' : '0';
 
       // Hide header during story scroll (from start until after last panel exits)
       const inStoryRange = p >= 0 && p <= 0.95;
