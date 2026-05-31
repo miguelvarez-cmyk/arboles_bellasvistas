@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preload" as="image" href="data/images/antes%20sin%20%C3%A1rboles.PNG">
+  <link rel="preload" as="image" href="data/images/despu%C3%A9s%20con%20%C3%A1rboles.png">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -427,6 +429,86 @@
     }
     .fade.vis { opacity: 1; transform: translateY(0); }
 
+    /* ── STORY / SCROLLYTELLING ── */
+    #story {
+      position: relative;
+      height: 500vh;
+    }
+    #story-stage {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .story-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+    #bg-before {
+      background-image: url('data/images/antes%20sin%20%C3%A1rboles.PNG');
+      z-index: 1;
+    }
+    #bg-after {
+      background-image: url('data/images/despu%C3%A9s%20con%20%C3%A1rboles.png');
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .story-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      background: linear-gradient(to bottom,
+        rgba(10,20,12,0.35) 0%,
+        rgba(10,20,12,0.60) 50%,
+        rgba(10,20,12,0.65) 100%);
+      pointer-events: none;
+    }
+    .story-panel {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 var(--pad);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .story-panel p {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.55rem, 7vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.25;
+      color: #ffffff;
+      text-align: center;
+      max-width: 460px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.55);
+    }
+    .story-panel.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .story-panel.exited {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+    .s-bridge { padding: 3.5rem 0 3rem; }
+    .s-bridge h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 11vw, 4.2rem);
+      line-height: 1.03;
+      color: var(--green-dark);
+      margin-bottom: 1.1rem;
+    }
+    .s-bridge h1 span { color: var(--green); display: block; }
+
     @media (min-width: 600px) { :root { --pad: 2rem; } }
     @media (min-width: 900px) { :root { --max: 600px; } }
   </style>
@@ -441,13 +523,29 @@
   </div>
 </header>
 
-<!-- INTRO / OBJETIVO -->
-<section class="s-intro">
+<!-- SCROLLYTELLING INTRO -->
+<div id="story">
+  <div id="story-stage">
+    <div class="story-bg" id="bg-before"></div>
+    <div class="story-bg" id="bg-after"></div>
+    <div class="story-overlay"></div>
+    <div class="story-panel" id="panel-1">
+      <p>Bellavistas es uno de los barrios con menos arbolado de Madrid.</p>
+    </div>
+    <div class="story-panel" id="panel-2">
+      <p>Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles hasta superar el millar.</p>
+    </div>
+    <div class="story-panel" id="panel-3">
+      <p>Ayúdanos a hacerlo realidad.</p>
+    </div>
+  </div>
+</div>
+
+<!-- BRIDGE: TITULO Y ESTADISTICAS -->
+<section class="s-bridge">
   <div class="wrap">
     <p class="tag fade">Movimiento vecinal · Bellavistas, Tetuán · Madrid</p>
     <h1 class="fade">1.000 árboles<span>para nuestro barrio</span></h1>
-    <p class="hero-lead fade">Bellavistas es uno de los barrios con menos arbolado de Madrid. Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles hasta superar el millar.</p>
-    <p class="hero-lead fade" style="color: var(--green); font-weight: 600; margin-top: 0.75rem;">Únete a este movimiento vecinal.</p>
     <div class="intro-stats fade">
       <div class="istat">
         <span class="istat-n">686</span>
@@ -617,6 +715,48 @@
       document.getElementById('successBox').style.display = 'block';
     }, 1000);
   }
+
+  // Scrollytelling
+  (function () {
+    const story   = document.getElementById('story');
+    const bgAfter = document.getElementById('bg-after');
+    const panels  = ['panel-1','panel-2','panel-3'].map(id => document.getElementById(id));
+
+    const BEATS = [
+      { from: 0.15, to: 0.35, idx: 0 },
+      { from: 0.35, to: 0.55, idx: 1 },
+      { from: 0.55, to: 0.75, idx: 2 },
+    ];
+
+    function getProgress() {
+      const rect = story.getBoundingClientRect();
+      const scrolled = -rect.top;
+      const total = story.offsetHeight - window.innerHeight;
+      return Math.max(0, Math.min(1, scrolled / total));
+    }
+
+    let lastP = -1;
+    function onScroll() {
+      const p = getProgress();
+      if (Math.abs(p - lastP) < 0.001) return;
+      lastP = p;
+
+      let activeBeat = -1;
+      BEATS.forEach((b, i) => { if (p >= b.from && p < b.to) activeBeat = i; });
+
+      panels.forEach((panel, i) => {
+        const isActive = i === activeBeat;
+        const isPast   = p >= (BEATS[i]?.to ?? 0) && !isActive;
+        panel.classList.toggle('active', isActive);
+        panel.classList.toggle('exited', isPast);
+      });
+
+      bgAfter.style.opacity = p >= BEATS[2].from ? '1' : '0';
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
 </script>
 </body>
 </html>
