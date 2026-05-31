@@ -23,14 +23,17 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; font-family: 'Nunito', system-ui, -apple-system, "Segoe UI", sans-serif; }
-    #map { position: absolute; inset: 0; background: #f3f1ec; }
+    body { display: flex; flex-direction: column; }
+    #map { flex: 1; background: #f3f1ec; }
+    .topbar { position: relative; z-index: 1000; }
 
     /* ── Barra superior ── */
     .topbar {
-      position: absolute; top: 0; left: 0; right: 0; height: 44px; z-index: 1000;
+      height: 44px;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 14px; background: rgba(255,255,255,.93);
       border-bottom: 1px solid var(--line); backdrop-filter: blur(8px);
+      flex-shrink: 0;
     }
     .topbar .brand {
       text-decoration: none; color: var(--g2);
@@ -61,8 +64,7 @@
     .legend .row .n { color: var(--muted); font-weight: 600; }
     .legend .dot { width: 13px; height: 13px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px rgba(0,0,0,.06); }
     .legend .sq  { width: 13px; height: 13px; border-radius: 3px; flex: none; }
-
-    .leaflet-top { margin-top: 44px; }
+    .legend .aceras-row { display: none; }
 
     /* ── Popups ── */
     .leaflet-popup-content-wrapper {
@@ -105,11 +107,17 @@
   <h2>Qué ves en el mapa</h2>
   <div class="row"><span class="dot" style="background:#7FA07C"></span><b>Árboles existentes</b> <span class="n" id="nE"></span></div>
   <div class="row"><span class="dot" style="background:#2ECF4B"></span><b>Árboles propuestos</b> <span class="n" id="nP"></span></div>
-  <div class="row"><span class="sq" style="background:#D9CFC2;border:1px solid #9C8B7A"></span><b>Aceras</b></div>
 </div>
 
 <script>
-const map = L.map('map', { center:[40.4462,-3.6980], zoom:15, zoomControl:true });
+const map = L.map('map', { zoomControl:true });
+// Centrar en Bellas Vistas mostrando todo el barrio
+// Límites aprox: lat [40.4471, 40.4576], lon [-3.7135, -3.7041]
+const BOUNDS = L.latLngBounds(
+  L.latLng(40.4471, -3.7135),
+  L.latLng(40.4576, -3.7041)
+);
+map.fitBounds(BOUNDS, { padding: [40, 40] });
 
 // Capas base intercambiables: mapa con nombres de calle (Carto) y foto satélite (Esri)
 const baseMapa = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -122,14 +130,9 @@ const baseSatelite = L.tileLayer(
 L.control.layers({ 'Mapa': baseMapa, 'Satélite': baseSatelite }, null,
                  { position:'topright', collapsed:false }).addTo(map);
 
-// Pane para aceras, por debajo de los árboles
-map.createPane('acerasPane');
-map.getPane('acerasPane').style.zIndex = 350;
-const cvsA = L.canvas({ pane:'acerasPane', padding:0.5 });
 // tolerance: amplía el área de toque alrededor de cada punto (móvil)
 const cvs  = L.canvas({ padding:0.5, tolerance:8 });
 
-const gA = L.layerGroup().addTo(map);  // aceras
 const gE = L.layerGroup().addTo(map);  // árboles existentes
 const gP = L.layerGroup().addTo(map);  // árboles propuestos (sobre plazas SER)
 
@@ -183,17 +186,6 @@ function popupPropuesto(props) {
        + '<div class="tp-meta">' + det.join(' · ') + '</div></div>';
 }
 
-// ── Aceras (cartografía municipal) ──
-function renderAceras() {
-  const fc = window.ACERAS;
-  if (!fc) return;
-  L.geoJSON(fc, {
-    pane:'acerasPane', renderer: cvsA,
-    style: () => ({ color:'#9C8B7A', weight:.5, fillColor:'#D9CFC2', fillOpacity:.5 }),
-    interactive: false
-  }).addTo(gA);
-}
-
 // ── Árboles existentes (inventario municipal) — copa verde apagado ──
 function renderExisting() {
   const fc = window.OSM_TREES;
@@ -226,7 +218,6 @@ function renderProposed() {
   });
 }
 
-renderAceras();
 renderExisting();
 renderProposed();
 
