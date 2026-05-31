@@ -150,8 +150,8 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 
 | Scroll | Evento | Visual |
 |---|---|---|
-| 0-10% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, header invisible, **flecha ↓ amarilla visible**, sin texto |
-| 10-40% | Panel 1 entra/sale | "Bellavistas es uno de los barrios con menos arbolado de Madrid." (aparición gradual, desaparición lenta) |
+| 0-2% | Intro (flecha visible) | Imagen "antes sin árboles" fija, header invisible, **flecha ↓ amarilla apenas visible**, panel 1 ya activo |
+| 0-40% | Panel 1 activo desde inicio | "Bellavistas es uno de los barrios con menos arbolado de Madrid." — **aparece inmediatamente al abrir la página** |
 | 35-65% | Panel 2 entra/sale | "Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles." (superposición con panel 1 al inicio, texto más conciso) |
 | 60-90% | Panel 3 entra/sale (sin cambio de imagen) | "Ayúdanos a hacerlo realidad." — imagen aún es "antes sin árboles" |
 | 75%+ | Image swap ocurre aquí | Imagen cambia a "después con árboles" (crossfade 0.8s) mientras panel 3 aún está visible |
@@ -197,7 +197,7 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 **Ritmo de paneles y timing de imagen** — modificar en `index.html`:
 ```js
 const BEATS = [
-  { from: 0.10, to: 0.40, idx: 0 },  // Panel 1
+  { from: 0.00, to: 0.40, idx: 0 },  // Panel 1 - aparece desde el inicio (0%)
   { from: 0.35, to: 0.65, idx: 1 },  // Panel 2
   { from: 0.60, to: 0.90, idx: 2 },  // Panel 3 (sin image swap, solo texto)
 ];
@@ -224,9 +224,9 @@ Cambiar `0.95` para que reaparezca antes/después.
 
 **Indicador de scroll** — ajustar timing de visibilidad:
 ```js
-scrollIndicator.classList.toggle('visible', p >= 0 && p <= 0.10);  // Visible solo 0-10%
+scrollIndicator.classList.toggle('visible', p >= 0 && p < 0.02);  // Visible solo 0-2%
 ```
-Cambiar el rango `0` y `0.10` para mostrar/ocultar en diferentes momentos. Color amarillo (#FFE066) y símbolo Unicode `↓` en el HTML: `<div class="scroll-arrow">↓</div>`
+Cambiar el rango `0` y `0.02` para mostrar/ocultar en diferentes momentos. Color amarillo (#FFE066) y símbolo Unicode `↓` en el HTML: `<div class="scroll-arrow">↓</div>`
 
 **Tamaño de textos** — modificar en `.story-panel p`:
 ```css
