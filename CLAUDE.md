@@ -63,7 +63,7 @@ Las bandas/aceras se filtran a Bellas Vistas con `Límite de Barrios de la Zona 
 
 | Fichero | Función |
 |---|---|
-| `index.html` | Landing page del movimiento: hero, estadísticas, canales de petición al Ayuntamiento, formulario de firmas |
+| `index.html` | Landing page del movimiento con **scrollytelling cinematográfico** en el hero: imagen fija detrás de textos que entran/salen secuenciadamente (0-75% scroll), culminando en cambio de imagen (sin árboles → con árboles) mientras el usuario lee "Ayúdanos a hacerlo realidad". Después: estadísticas, canales de petición, formulario de firmas. Vanilla JS sin deps, optimizado para móvil. |
 | `mapa.html` | Mapa Leaflet **minimalista** — dos capas base intercambiables (Carto Voyager con nombres de calle, por defecto / foto satélite Esri World Imagery) vía `L.control.layers` arriba a la derecha + 3 capas de datos fijas: aceras, árboles existentes y árboles propuestos (sólo sobre plazas SER). Sin toggles para las capas de datos, sin paneles; leyenda con conteos dinámicos y **un popup por árbol con la especie** (existentes: nombre común + científico del inventario municipal oficial, `comun`/`species`; propuestos: especie asignada según la anchura de la calle, `comun`/`species`, y copa). Tipografías de marca (Playfair/Nunito) y `tolerance:8` en el canvas para el toque en Chrome/Android |
 | `visualizacion.html` | Comparador antes/después mediante slider SVG arrastrable; 5 calles × 3 estaciones generadas dinámicamente en JS |
 
@@ -132,3 +132,76 @@ Los shapefiles oficiales y los datos SER usan **UTM ETRS89 Zona 30N (EPSG:25830)
 ## Descarga OSM: por qué tiles
 
 La API REST de OSM tiene un límite de 50.000 nodos por petición. El bbox completo del barrio excede ese límite, por eso `descargar_osm.py` divide en **16 tiles de 4×4** y fusiona deduplicando por ID de elemento. La API Overpass (`overpass-api.de`) devuelve HTTP 406 desde esta red; no usar.
+
+## Scrollytelling en `index.html`
+
+La landing page implementa una secuencia cinematográfica de scroll (scrollytelling) que guía emocionalmente al usuario desde el problema hasta la solución.
+
+### Arquitectura
+
+**HTML**: El hero se compone de un contenedor alto (`#story`, 500vh) con un stage sticky (`#story-stage`, 100vh) que permanece pinned mientras el usuario scrollea. Dentro del stage:
+- Dos capas de imagen (`#bg-before` y `#bg-after`) con crossfade via opacity
+- Overlay oscuro con gradiente (para contraste del texto sobre cualquier imagen)
+- Tres paneles de texto (`panel-1`, `panel-2`, `panel-3`) centrados y animados
+
+Después del story, una sección puente (`s-bridge`) reintroduce el título "1.000 árboles para nuestro barrio" y las estadísticas principales.
+
+### Flujo visual
+
+| Scroll | Evento | Visual |
+|---|---|---|
+| 0-15% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, sin texto |
+| 15-35% | Panel 1 entra/sale | "Bellavistas es uno de los barrios con menos arbolado de Madrid." |
+| 35-55% | Panel 2 entra/sale | "Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles hasta superar el millar." |
+| 55-75% | Panel 3 entra/sale + image swap | "Ayúdanos a hacerlo realidad." + **imagen cambia a "después con árboles"** (crossfade 0.8s) |
+| 75%+ | Salida de paneles | Título y estadísticas aparecen (`.fade` + `IntersectionObserver`) |
+
+### Detalles de implementación
+
+**CSS**: Uso de `position: sticky` en `#story-stage` para fijar el canvas. `clamp()` en tipografía para escalar responsivamente. Gradiente de overlay con `rgba()` para adaptarse a cualquier imagen de fondo.
+
+**JavaScript**: IIFE sin dependencias que:
+1. Calcula progreso del scroll como fracción (0-1) comparando posición de `#story` contra viewport
+2. Detecta qué beat (fase) está activo según 3 rangos: [0.15, 0.35], [0.35, 0.55], [0.55, 0.75]
+3. Aplica/remueve clases `.active` y `.exited` a los paneles (transiciones CSS)
+4. Controla `opacity` de `#bg-after` para el cambio de imagen (100% opaco desde beat 2)
+5. Listener passive para performance en Chrome Android
+
+**Preload**: Las dos imágenes se precargan vía `<link rel="preload" as="image">` en el `<head>` para evitar flash de contenido.
+
+### Imágenes utilizadas
+
+- `data/images/antes%20sin%20%C3%A1rboles.PNG` — Foto de calle real de Bellavistas sin árboles (problema)
+- `data/images/despu%C3%A9s%20con%20%C3%A1rboles.png` — Foto de la misma calle con árboles plantados (solución)
+
+Los nombres contienen espacios y caracteres especiales; las URLs están codificadas (espacio = `%20`, á = `%C3%A1`).
+
+### Editables
+
+Para ajustar el ritmo de aparición, modificar los umbrales en la sección `BEATS` del IIFE en `index.html`:
+```js
+const BEATS = [
+  { from: 0.15, to: 0.35, idx: 0 },  // Panel 1
+  { from: 0.35, to: 0.55, idx: 1 },  // Panel 2
+  { from: 0.55, to: 0.75, idx: 2 },  // Panel 3 (+ image swap)
+];
+```
+
+Para más scroll antes de los paneles, aumentar `0.15`. Para más tiempo por panel, ampliar el rango (`to - from`). Para alargar toda la secuencia, cambiar `height: 500vh` a `height: 600vh` (u otro múltiplo de 100).
+
+Duración de transiciones: `transition: opacity 0.5s ease, transform 0.5s ease` en `.story-panel` (textos) y `transition: opacity 0.8s ease` en `#bg-after` (imagen). Cambiar los valores para acelerar/ralentizar.
+
+### Compatibilidad
+
+- ✅ Chrome/Edge (Windows, Android)
+- ✅ Firefox
+- ✅ Safari (iOS 15+, posición sticky funciona)
+- ✅ Móvil: viewports desde 320px (clamp fonts, layout adapta)
+- ✅ Scroll suave `html { scroll-behavior: smooth }` no interfiere con el handler
+
+### Performance
+
+- Vanilla JS: sin bundle, sin build step
+- Listener `passive: true`: no bloquea scroll
+- Condición `Math.abs(p - lastP) < 0.001` evita actualizaciones micromovimientos innecesarias
+- `background-size: cover` y `background-position: center` optimizan carga de imagen
