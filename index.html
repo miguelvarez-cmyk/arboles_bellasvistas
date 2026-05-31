@@ -518,50 +518,18 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      opacity: 0;
-      animation: fadeInArrow 1s ease 0.5s forwards;
-    }
-    @keyframes fadeInArrow {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
+      opacity: 1;
+      transition: opacity 0.3s ease;
     }
     .scroll-arrow {
-      width: 24px;
-      height: 24px;
-      border: 2px solid #ffffff;
-      border-top: none;
-      border-left: none;
-      transform: rotate(-45deg);
-      animation: bounceArrow 2s infinite;
-    }
-    @keyframes bounceArrow {
-      0%, 100% {
-        transform: rotate(-45deg) translateY(0);
-        opacity: 1;
-      }
-      50% {
-        transform: rotate(-45deg) translateY(8px);
-        opacity: 0.5;
-      }
-    }
-    .scroll-text {
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: #ffffff;
-      text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+      font-size: 24px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     .story-panel.active {
       opacity: 1;
@@ -611,8 +579,7 @@
       <p>Ayúdanos a hacerlo realidad.</p>
     </div>
     <div class="scroll-indicator">
-      <span class="scroll-text">Scroll</span>
-      <div class="scroll-arrow"></div>
+      <div class="scroll-arrow">↓</div>
     </div>
   </div>
 </div>
@@ -836,13 +803,7 @@
       header.classList.toggle('hidden-during-story', inStoryRange);
 
       // Hide scroll indicator once user starts scrolling
-      if (p > 0.02) {
-        scrollIndicator.style.opacity = '0';
-        scrollIndicator.style.pointerEvents = 'none';
-      } else {
-        scrollIndicator.style.opacity = '1';
-        scrollIndicator.style.pointerEvents = 'auto';
-      }
+      scrollIndicator.style.opacity = p > 0.02 ? '0' : '1';
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
