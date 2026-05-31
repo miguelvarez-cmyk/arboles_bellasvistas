@@ -56,6 +56,11 @@
       background: rgba(247,249,247,0.96);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
+      transition: opacity 0.3s ease;
+    }
+    header.hidden-during-story {
+      opacity: 0;
+      pointer-events: none;
     }
     .hd {
       display: flex;
@@ -463,12 +468,15 @@
     }
     .story-overlay {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       z-index: 3;
       background: linear-gradient(to bottom,
-        rgba(10,20,12,0.35) 0%,
-        rgba(10,20,12,0.60) 50%,
-        rgba(10,20,12,0.65) 100%);
+        rgba(10,20,12,0.15) 0%,
+        rgba(10,20,12,0.25) 50%,
+        rgba(10,20,12,0.30) 100%);
       pointer-events: none;
     }
     .story-panel {
@@ -722,13 +730,14 @@
   // Scrollytelling
   (function () {
     const story   = document.getElementById('story');
+    const header  = document.querySelector('header');
     const bgAfter = document.getElementById('bg-after');
     const panels  = ['panel-1','panel-2','panel-3'].map(id => document.getElementById(id));
 
     const BEATS = [
-      { from: 0.15, to: 0.35, idx: 0 },
-      { from: 0.35, to: 0.55, idx: 1 },
-      { from: 0.55, to: 0.75, idx: 2 },
+      { from: 0.10, to: 0.40, idx: 0 },
+      { from: 0.35, to: 0.65, idx: 1 },
+      { from: 0.60, to: 0.90, idx: 2 },
     ];
 
     function getProgress() {
@@ -755,6 +764,10 @@
       });
 
       bgAfter.style.opacity = p >= BEATS[2].from ? '1' : '0';
+
+      // Hide header during story scroll (from start until after last panel exits)
+      const inStoryRange = p >= 0 && p <= 0.95;
+      header.classList.toggle('hidden-during-story', inStoryRange);
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
