@@ -24,7 +24,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; font-family: 'Nunito', system-ui, -apple-system, "Segoe UI", sans-serif; }
     body { display: flex; flex-direction: column; }
-    #map { height: 700px; background: #f0f4f0; }
+    #map { width: 100vw; aspect-ratio: 1 / 1.4; background: #f0f4f0; }
     .topbar { position: relative; z-index: 1000; }
 
     /* ── Barra superior ── */
@@ -35,13 +35,6 @@
       border-bottom: 1px solid var(--line); backdrop-filter: blur(8px);
       flex-shrink: 0;
     }
-    .topbar .brand {
-      text-decoration: none; color: var(--g2);
-      font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.05rem;
-      display: flex; align-items: center; gap: .4rem;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 72%;
-    }
-    .topbar .brand .leaf { font-family: 'Nunito', sans-serif; }
     .topbar .back {
       color: var(--muted); font-weight: 700; font-size: .82rem;
       text-decoration: none; white-space: nowrap; flex: none;
@@ -75,9 +68,9 @@
     .leaflet-popup-tip { box-shadow: 0 6px 20px rgba(0,0,0,.18); }
     .tp { padding: 11px 14px 12px; border-left: 4px solid #ccc; }
     .tp-exist { border-left-color: var(--g3); }
-    .tp-prop  { border-left-color: var(--orange); }
+    .tp-prop  { border-left-color: #2ECF4B; }
     .tp-h { font-weight: 800; font-size: .95rem; color: var(--g2); }
-    .tp-prop .tp-h { color: var(--orange-d); }
+    .tp-prop .tp-h { color: #159E2E; }
     .tp-meta { font-size: .72rem; color: var(--muted); margin-top: 2px; }
     .tp-s { font-size: .85rem; color: #333; margin-top: 6px; }
     .tp-s em { color: var(--g3); font-style: italic; font-weight: 600; }
@@ -97,14 +90,12 @@
 <body>
 
 <div class="topbar">
-  <a href="index.html" class="brand"><span class="leaf">🌳</span> 1000 Árboles · Bellavistas</a>
   <a href="index.html" class="back">← Volver</a>
 </div>
 
 <div id="map"></div>
 
 <div class="legend">
-  <h2>Qué ves en el mapa</h2>
   <div class="row"><span class="dot" style="background:#7FA07C"></span><b>Árboles existentes</b> <span class="n" id="nE"></span></div>
   <div class="row"><span class="dot" style="background:#2ECF4B"></span><b>Árboles propuestos</b> <span class="n" id="nP"></span></div>
 </div>
@@ -159,13 +150,13 @@ const nf = new Intl.NumberFormat('es-ES');
 
 // ── HTML de los popups ──
 function popupExistente(props) {
-  let especie;
-  if (props && props.comun && props.species)
-                                   especie = props.comun + ' <em>(' + props.species + ')</em>';
-  else if (props && props.species) especie = '<em>' + props.species + '</em>';
-  else if (props && props.comun)   especie = props.comun;
-  else if (props && props.genus)   especie = 'Género: <em>' + props.genus + '</em>';
-  else                             especie = 'Especie no catalogada';
+  let especie = '';
+  if (props && props.comun) especie += props.comun;
+  if (props && props.species) especie += '<br><em>' + props.species + '</em>';
+  else if (!props || !props.comun) {
+    if (props && props.genus) especie = 'Género: <em>' + props.genus + '</em>';
+    else especie = 'Especie no catalogada';
+  }
   const det = [];
   if (props && props.altura) det.push('Altura ≈ ' + props.altura + ' m');
   if (props && props.copa)   det.push('copa ≈ ' + props.copa + ' m');
@@ -174,16 +165,12 @@ function popupExistente(props) {
        + '<div class="tp-s">' + especie + '</div>' + meta + '</div>';
 }
 function popupPropuesto(props) {
-  let especie;
-  if (props && props.comun && props.species)
-                                   especie = props.comun + ' <em>(' + props.species + ')</em>';
-  else if (props && props.species) especie = '<em>' + props.species + '</em>';
-  else                             especie = 'Especie propuesta';
-  const det = ['sobre plaza SER'];
-  if (props && props.copa) det.unshift('copa ≈ ' + props.copa + ' m');
+  let especie = '';
+  if (props && props.comun) especie += props.comun;
+  if (props && props.species) especie += '<br><em>' + props.species + '</em>';
+  else if (!props || !props.comun) especie = 'Especie propuesta';
   return '<div class="tp tp-prop"><div class="tp-h">Árbol propuesto</div>'
-       + '<div class="tp-s">' + especie + '</div>'
-       + '<div class="tp-meta">' + det.join(' · ') + '</div></div>';
+       + '<div class="tp-s">' + especie + '</div></div>';
 }
 
 // ── Árboles existentes (inventario municipal) — copa verde apagado ──
