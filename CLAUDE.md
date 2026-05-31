@@ -150,7 +150,7 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 
 | Scroll | Evento | Visual |
 |---|---|---|
-| 0-10% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, header invisible, flecha ↓ visible, sin texto |
+| 0-10% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, header invisible, **flecha ↓ amarilla visible**, sin texto |
 | 10-40% | Panel 1 entra/sale | "Bellavistas es uno de los barrios con menos arbolado de Madrid." (aparición gradual, desaparición lenta) |
 | 35-65% | Panel 2 entra/sale | "Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles." (superposición con panel 1 al inicio, texto más conciso) |
 | 60-90% | Panel 3 entra/sale (sin cambio de imagen) | "Ayúdanos a hacerlo realidad." — imagen aún es "antes sin árboles" |
@@ -164,10 +164,11 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 **CSS**: Uso de `position: sticky` en `#story-stage` para fijar el canvas. `clamp()` en tipografía para escalar responsivamente. Gradiente de overlay con `rgba()` para adaptarse a cualquier imagen de fondo.
 
 **Indicador de scroll**:
-- `.scroll-indicator` aparece en la esquina inferior del stage (posición absoluta, bottom: 40px)
-- `.scroll-arrow` es un div que contiene el símbolo Unicode `↓` (flecha blanca)
-- Tamaño 24px, sin animaciones
-- Se desvanece suavemente (transition: 0.3s) cuando `p > 0.02` (usuario comienza scroll)
+- `.scroll-indicator` aparece en la esquina inferior del stage (posición absoluta, bottom: 60px)
+- `.scroll-arrow` contiene el símbolo Unicode `↓` (flecha amarilla #FFE066)
+- Tamaño 28px, visible solo entre 0-10% del scroll (antes de que aparezcan los textos)
+- Se desvanece suavemente (transition: 0.3s) cuando comienza el primer panel
+- Color amarillo dorado para coincidir con los textos
 
 **Colores de textos**:
 - Panel 1: `#FFE066` (amarillo dorado) — problema/denuncia
@@ -221,23 +222,21 @@ header.classList.toggle('hidden-during-story', inStoryRange);
 ```
 Cambiar `0.95` para que reaparezca antes/después.
 
-**Indicador de scroll** — ajustar timing de desaparición:
+**Indicador de scroll** — ajustar timing de visibilidad:
 ```js
-scrollIndicator.style.opacity = p > 0.02 ? '0' : '1';  // Desaparece tras 2% de scroll
+scrollIndicator.classList.toggle('visible', p >= 0 && p <= 0.10);  // Visible solo 0-10%
 ```
-Cambiar `0.02` para que desaparezca más/menos pronto. Para cambiar el símbolo, editar el HTML: `<div class="scroll-arrow">↓</div>`
+Cambiar el rango `0` y `0.10` para mostrar/ocultar en diferentes momentos. Color amarillo (#FFE066) y símbolo Unicode `↓` en el HTML: `<div class="scroll-arrow">↓</div>`
 
 **Tamaño de textos** — modificar en `.story-panel p`:
 ```css
-font-size: clamp(2.2rem, 9vw, 3.2rem);  /* min 2.2rem, escalable 9vw, max 3.2rem */
+font-size: clamp(2.8rem, 11vw, 4rem);  /* min 2.8rem, escalable 11vw, max 4rem */
 ```
 Aumentar los números para textos más grandes, disminuir para más pequeños.
 
-**Colores de textos** — cambiar en CSS:
+**Color de textos** — todos los paneles usan amarillo dorado:
 ```css
-#panel-1 p { color: #FFE066; }  /* amarillo dorado */
-#panel-2 p { color: #A8E6CF; }  /* verde menta */
-#panel-3 p { color: #FF8B94; }  /* rosa salmón */
+.story-panel p { color: #FFE066; }  /* amarillo dorado uniforme */
 ```
 
 **Duración de transiciones** — en `.story-panel` (textos), `#bg-after` (imagen) e indicador:
