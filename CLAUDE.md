@@ -187,10 +187,10 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 
 ### Imágenes utilizadas
 
-- `data/images/antes-sin-arboles.png` — Foto de calle real de Bellavistas sin árboles (problema)
-- `data/images/despues-con-arboles.png` — Foto de la misma calle con árboles plantados (solución)
+- `data/images/antes-sin-arboles.jpg` — Foto de calle real de Bellavistas sin árboles (problema) — 132 KB
+- `data/images/despues-con-arboles.jpg` — Foto de la misma calle con árboles plantados (solución) — 581 KB
 
-Los nombres se han simplificado (sin acentos ni espacios) para máxima compatibilidad con navegadores y servidores web.
+**Optimización:** Convertidas a JPEG con calidad 85%, redimensionadas a 1920px max. Reducción: 9.4 MB → 0.7 MB (94% compresión). Carga visual de alta calidad mantenida.
 
 ### Editables
 
