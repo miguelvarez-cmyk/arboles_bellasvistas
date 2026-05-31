@@ -163,10 +163,10 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 **CSS**: Uso de `position: sticky` en `#story-stage` para fijar el canvas. `clamp()` en tipografía para escalar responsivamente. Gradiente de overlay con `rgba()` para adaptarse a cualquier imagen de fondo.
 
 **Indicador de scroll**:
-- `.scroll-indicator` aparece en la esquina inferior del stage con animación `fadeInArrow`
-- `.scroll-arrow` es un div con border rotado -45° que simula una flecha
-- `@keyframes bounceArrow` anima el movimiento vertical cada 2 segundos
-- Se desvanece automáticamente cuando `p > 0.02` (usuario comienza scroll)
+- `.scroll-indicator` aparece en la esquina inferior del stage (posición absoluta, bottom: 40px)
+- `.scroll-arrow` es un div que contiene el símbolo Unicode `↓` (flecha blanca)
+- Tamaño 24px, sin animaciones
+- Se desvanece suavemente (transition: 0.3s) cuando `p > 0.02` (usuario comienza scroll)
 
 **Colores de textos**:
 - Panel 1: `#FFE066` (amarillo dorado) — problema/denuncia
@@ -218,13 +218,11 @@ header.classList.toggle('hidden-during-story', inStoryRange);
 ```
 Cambiar `0.95` para que reaparezca antes/después.
 
-**Indicador de scroll** — ocultar/mostrar y ajustar timing:
+**Indicador de scroll** — ajustar timing de desaparición:
 ```js
-if (p > 0.02) {  // Desaparece tras un 2% de scroll
-  scrollIndicator.style.opacity = '0';
-}
+scrollIndicator.style.opacity = p > 0.02 ? '0' : '1';  // Desaparece tras 2% de scroll
 ```
-Cambiar `0.02` para que desaparezca más/menos pronto.
+Cambiar `0.02` para que desaparezca más/menos pronto. Para cambiar el símbolo, editar el HTML: `<div class="scroll-arrow">↓</div>`
 
 **Colores de textos** — cambiar en CSS:
 ```css
@@ -233,11 +231,11 @@ Cambiar `0.02` para que desaparezca más/menos pronto.
 #panel-3 p { color: #FF8B94; }  /* rosa salmón */
 ```
 
-**Duración de transiciones** — en `.story-panel` (textos) y `#bg-after` (imagen):
+**Duración de transiciones** — en `.story-panel` (textos), `#bg-after` (imagen) e indicador:
 ```css
 .story-panel { transition: opacity 0.5s ease, transform 0.5s ease; }
 #bg-after { transition: opacity 0.8s ease; }
-.scroll-arrow { animation: bounceArrow 2s infinite; }  /* flecha */
+.scroll-indicator { transition: opacity 0.3s ease; }  /* flecha */
 ```
 
 ### Compatibilidad
