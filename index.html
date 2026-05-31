@@ -764,7 +764,7 @@
     const scrollIndicator = document.querySelector('.scroll-indicator');
 
     const BEATS = [
-      { from: 0.10, to: 0.40, idx: 0 },
+      { from: 0.00, to: 0.40, idx: 0 },
       { from: 0.35, to: 0.65, idx: 1 },
       { from: 0.60, to: 0.90, idx: 2 },
     ];
@@ -798,8 +798,8 @@
       const inStoryRange = p >= 0 && p <= 0.95;
       header.classList.toggle('hidden-during-story', inStoryRange);
 
-      // Show scroll indicator before first text appears (0-0.10), hide after (0.10+)
-      scrollIndicator.classList.toggle('visible', p >= 0 && p <= 0.10);
+      // Show scroll indicator only at very start (0-0.02), then hide
+      scrollIndicator.classList.toggle('visible', p >= 0 && p < 0.02);
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
