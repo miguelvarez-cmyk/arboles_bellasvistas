@@ -495,12 +495,73 @@
     .story-panel p {
       font-family: 'Playfair Display', serif;
       font-size: clamp(1.55rem, 7vw, 2.4rem);
-      font-weight: 700;
+      font-weight: 900;
       line-height: 1.25;
-      color: #ffffff;
       text-align: center;
       max-width: 460px;
       text-shadow: 0 2px 16px rgba(0,0,0,0.55);
+    }
+    #panel-1 p {
+      color: #FFE066;
+    }
+    #panel-2 p {
+      color: #A8E6CF;
+    }
+    #panel-3 p {
+      color: #FF8B94;
+    }
+
+    /* Scroll down arrow */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeInArrow 1s ease 0.5s forwards;
+    }
+    @keyframes fadeInArrow {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+    .scroll-arrow {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #ffffff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(-45deg);
+      animation: bounceArrow 2s infinite;
+    }
+    @keyframes bounceArrow {
+      0%, 100% {
+        transform: rotate(-45deg) translateY(0);
+        opacity: 1;
+      }
+      50% {
+        transform: rotate(-45deg) translateY(8px);
+        opacity: 0.5;
+      }
+    }
+    .scroll-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #ffffff;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.4);
     }
     .story-panel.active {
       opacity: 1;
@@ -548,6 +609,10 @@
     </div>
     <div class="story-panel" id="panel-3">
       <p>Ayúdanos a hacerlo realidad.</p>
+    </div>
+    <div class="scroll-indicator">
+      <span class="scroll-text">Scroll</span>
+      <div class="scroll-arrow"></div>
     </div>
   </div>
 </div>
@@ -733,6 +798,7 @@
     const header  = document.querySelector('header');
     const bgAfter = document.getElementById('bg-after');
     const panels  = ['panel-1','panel-2','panel-3'].map(id => document.getElementById(id));
+    const scrollIndicator = document.querySelector('.scroll-indicator');
 
     const BEATS = [
       { from: 0.10, to: 0.40, idx: 0 },
@@ -768,6 +834,15 @@
       // Hide header during story scroll (from start until after last panel exits)
       const inStoryRange = p >= 0 && p <= 0.95;
       header.classList.toggle('hidden-during-story', inStoryRange);
+
+      // Hide scroll indicator once user starts scrolling
+      if (p > 0.02) {
+        scrollIndicator.style.opacity = '0';
+        scrollIndicator.style.pointerEvents = 'none';
+      } else {
+        scrollIndicator.style.opacity = '1';
+        scrollIndicator.style.pointerEvents = 'auto';
+      }
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
