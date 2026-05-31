@@ -150,11 +150,13 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 
 | Scroll | Evento | Visual |
 |---|---|---|
-| 0-15% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, sin texto |
-| 15-35% | Panel 1 entra/sale | "Bellavistas es uno de los barrios con menos arbolado de Madrid." |
-| 35-55% | Panel 2 entra/sale | "Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles hasta superar el millar." |
-| 55-75% | Panel 3 entra/sale + image swap | "Ayúdanos a hacerlo realidad." + **imagen cambia a "después con árboles"** (crossfade 0.8s) |
-| 75%+ | Salida de paneles | Título y estadísticas aparecen (`.fade` + `IntersectionObserver`) |
+| 0-10% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, header invisible, sin texto |
+| 10-40% | Panel 1 entra/sale | "Bellavistas es uno de los barrios con menos arbolado de Madrid." (aparición gradual, desaparición lenta) |
+| 35-65% | Panel 2 entra/sale | "Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles hasta superar el millar." (superposición con panel 1 al inicio) |
+| 60-90% | Panel 3 entra/sale + image swap | "Ayúdanos a hacerlo realidad." + **imagen cambia a "después con árboles"** (crossfade 0.8s) |
+| 90%+ | Salida de paneles, header reaparece | Título y estadísticas aparecen (`.fade` + `IntersectionObserver`), header vuelve visible |
+
+**Nota:** Los beats se solapan ligeramente (ej. panel 1 sale mientras panel 2 entra) para un efecto cinematográfico más fluido. El header permanece invisible durante toda la secuencia (0-95%) y reaparece suavemente después.
 
 ### Detalles de implementación
 
@@ -178,18 +180,37 @@ Los nombres se han simplificado (sin acentos ni espacios) para máxima compatibi
 
 ### Editables
 
-Para ajustar el ritmo de aparición, modificar los umbrales en la sección `BEATS` del IIFE en `index.html`:
+**Ritmo de paneles** — modificar los umbrales en la sección `BEATS` del IIFE en `index.html`:
 ```js
 const BEATS = [
-  { from: 0.15, to: 0.35, idx: 0 },  // Panel 1
-  { from: 0.35, to: 0.55, idx: 1 },  // Panel 2
-  { from: 0.55, to: 0.75, idx: 2 },  // Panel 3 (+ image swap)
+  { from: 0.10, to: 0.40, idx: 0 },  // Panel 1
+  { from: 0.35, to: 0.65, idx: 1 },  // Panel 2
+  { from: 0.60, to: 0.90, idx: 2 },  // Panel 3 (+ image swap desde 0.60)
 ];
 ```
+Los valores representan fracción del scroll dentro de `#story` (0.0 = inicio, 1.0 = fin de 500vh). Para alargar la secuencia, cambiar `height: 500vh` a `height: 600vh` o mayor.
 
-Para más scroll antes de los paneles, aumentar `0.15`. Para más tiempo por panel, ampliar el rango (`to - from`). Para alargar toda la secuencia, cambiar `height: 500vh` a `height: 600vh` (u otro múltiplo de 100).
+**Opacidad del overlay** — reducir/aumentar oscuridad en `.story-overlay`:
+```css
+background: linear-gradient(to bottom,
+  rgba(10,20,12,0.15) 0%,    /* arriba más claro */
+  rgba(10,20,12,0.25) 50%,
+  rgba(10,20,12,0.30) 100%);  /* abajo más oscuro */
+```
+Valores más altos (0.35–0.65 era el original) oscurecen más la imagen. Más bajos la dejan más visible.
 
-Duración de transiciones: `transition: opacity 0.5s ease, transform 0.5s ease` en `.story-panel` (textos) y `transition: opacity 0.8s ease` en `#bg-after` (imagen). Cambiar los valores para acelerar/ralentizar.
+**Visibilidad del header** — modificar el rango en el script:
+```js
+const inStoryRange = p >= 0 && p <= 0.95;  // 0-95% del scroll
+header.classList.toggle('hidden-during-story', inStoryRange);
+```
+Cambiar `0.95` para que reaparezca antes/después.
+
+**Duración de transiciones** — en `.story-panel` (textos) y `#bg-after` (imagen):
+```css
+.story-panel { transition: opacity 0.5s ease, transform 0.5s ease; }
+#bg-after { transition: opacity 0.8s ease; }
+```
 
 ### Compatibilidad
 
