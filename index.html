@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="preload" as="image" href="data/images/antes sin árboles.PNG">
-  <link rel="preload" as="image" href="data/images/después con árboles.png">
+  <link rel="preload" as="image" href="data/images/antes%20sin%20%C3%A1rboles.PNG">
+  <link rel="preload" as="image" href="data/images/despu%C3%A9s%20con%20%C3%A1rboles.png">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -440,6 +440,7 @@
       width: 100%;
       height: 100vh;
       overflow: hidden;
+      background: #999; /* debug background */
     }
     .story-bg {
       position: absolute;
@@ -452,11 +453,12 @@
       background-repeat: no-repeat;
     }
     #bg-before {
-      background-image: url("data/images/antes sin árboles.PNG");
+      background-image: url('data/images/antes%20sin%20%C3%A1rboles.PNG');
+      background-color: #ccc;
       z-index: 1;
     }
     #bg-after {
-      background-image: url("data/images/después con árboles.png");
+      background-image: url('data/images/despu%C3%A9s%20con%20%C3%A1rboles.png');
       z-index: 2;
       opacity: 0;
       transition: opacity 0.8s ease;
