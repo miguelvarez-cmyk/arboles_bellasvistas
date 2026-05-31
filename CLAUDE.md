@@ -150,13 +150,14 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 
 | Scroll | Evento | Visual |
 |---|---|---|
-| 0-10% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, header invisible, sin texto |
+| 0-10% | Intro (sin paneles activos) | Imagen "antes sin árboles" fija, header invisible, flecha ↓ visible, sin texto |
 | 10-40% | Panel 1 entra/sale | "Bellavistas es uno de los barrios con menos arbolado de Madrid." (aparición gradual, desaparición lenta) |
-| 35-65% | Panel 2 entra/sale | "Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles hasta superar el millar." (superposición con panel 1 al inicio) |
-| 60-90% | Panel 3 entra/sale + image swap | "Ayúdanos a hacerlo realidad." + **imagen cambia a "después con árboles"** (crossfade 0.8s) |
-| 90%+ | Salida de paneles, header reaparece | Título y estadísticas aparecen (`.fade` + `IntersectionObserver`), header vuelve visible |
+| 35-65% | Panel 2 entra/sale | "Necesitamos que el Ayuntamiento plante nuevos árboles en nuestras calles." (superposición con panel 1 al inicio, texto más conciso) |
+| 60-90% | Panel 3 entra/sale (sin cambio de imagen) | "Ayúdanos a hacerlo realidad." — imagen aún es "antes sin árboles" |
+| 75%+ | Image swap ocurre aquí | Imagen cambia a "después con árboles" (crossfade 0.8s) mientras panel 3 aún está visible |
+| 90%+ | Salida de paneles, header reaparece | Imagen fija con árboles, hay más scroll antes del bridge. Título y estadísticas aparecen, header vuelve visible |
 
-**Nota:** Los beats se solapan ligeramente (ej. panel 1 sale mientras panel 2 entra) para un efecto cinematográfico más fluido. El header permanece invisible durante toda la secuencia (0-95%) y reaparece suavemente después.
+**Nota:** Los beats se solapan ligeramente para un efecto cinematográfico más fluido. El header permanece invisible durante toda la secuencia (0-95%). La flecha desaparece al detectar scroll (p > 0.02).
 
 ### Detalles de implementación
 
@@ -192,15 +193,17 @@ Los nombres se han simplificado (sin acentos ni espacios) para máxima compatibi
 
 ### Editables
 
-**Ritmo de paneles** — modificar los umbrales en la sección `BEATS` del IIFE en `index.html`:
+**Ritmo de paneles y timing de imagen** — modificar en `index.html`:
 ```js
 const BEATS = [
   { from: 0.10, to: 0.40, idx: 0 },  // Panel 1
   { from: 0.35, to: 0.65, idx: 1 },  // Panel 2
-  { from: 0.60, to: 0.90, idx: 2 },  // Panel 3 (+ image swap desde 0.60)
+  { from: 0.60, to: 0.90, idx: 2 },  // Panel 3 (sin image swap, solo texto)
 ];
+
+bgAfter.style.opacity = p >= 0.75 ? '1' : '0';  // Imagen con árboles aparece al 75%
 ```
-Los valores representan fracción del scroll dentro de `#story` (0.0 = inicio, 1.0 = fin de 500vh). Para alargar la secuencia, cambiar `height: 500vh` a `height: 600vh` o mayor.
+Los valores representan fracción del scroll dentro de `#story` (0.0 = inicio, 1.0 = fin de 600vh). La imagen ahora aparece DESPUÉS de que el usuario vea el panel 3. Para alargar la secuencia, cambiar `height: 600vh` a mayor.
 
 **Opacidad del overlay** — reducir/aumentar oscuridad en `.story-overlay`:
 ```css
@@ -223,6 +226,12 @@ Cambiar `0.95` para que reaparezca antes/después.
 scrollIndicator.style.opacity = p > 0.02 ? '0' : '1';  // Desaparece tras 2% de scroll
 ```
 Cambiar `0.02` para que desaparezca más/menos pronto. Para cambiar el símbolo, editar el HTML: `<div class="scroll-arrow">↓</div>`
+
+**Tamaño de textos** — modificar en `.story-panel p`:
+```css
+font-size: clamp(2.2rem, 9vw, 3.2rem);  /* min 2.2rem, escalable 9vw, max 3.2rem */
+```
+Aumentar los números para textos más grandes, disminuir para más pequeños.
 
 **Colores de textos** — cambiar en CSS:
 ```css
