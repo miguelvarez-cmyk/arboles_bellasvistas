@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparación Antes y Después - 1000 Árboles Bellavistas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #F7F9F7;
+      --white:       #FFFFFF;
+      --border:      #DDE8DF;
+      --text:        #1A2E1B;
+      --muted:       #5A7360;
+      --green:       #2D6A4F;
+      --green-dark:  #1B4332;
+      --green-light: #52B788;
+      --green-pale:  #EBF7EE;
+      --yellow:      #FFD166;
+      --pad:         1.25rem;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(247,249,247,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.8rem 1.25rem;
+    }
+    .hd {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--green-dark);
+      text-decoration: none;
+    }
+
+    /* ── COMPARACIÓN SECTION ── */
+    .s-comparison {
+      position: relative;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .comp-container {
+      position: relative;
+      width: 100%;
+      height: 500vh;
+      /* cada viewport = ~100vh, x5 = trigger largo scroll */
+    }
+
+    .comp-sticky {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* imagen base (sin árboles) - siempre visible */
+    .comp-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .comp-base {
+      z-index: 1;
+    }
+
+    /* imagen con árboles - se revela con opacidad */
+    .comp-overlay {
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.05s linear;
+    }
+
+    /* textos que aparecen en scroll */
+    .comp-text {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .comp-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 12vw, 4rem);
+      color: #fff;
+      line-height: 1.15;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      font-weight: 900;
+    }
+
+    .comp-text p {
+      font-size: clamp(1rem, 3vw, 1.35rem);
+      color: rgba(255,255,255,0.9);
+      margin-top: 1rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      font-weight: 600;
+    }
+
+    /* ── DESPUÉS DEL STICKY ── */
+    .comp-after {
+      position: relative;
+      background: var(--bg);
+      padding: 3rem 1.25rem;
+      z-index: 5;
+    }
+
+    .wrap {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .comp-after h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--green-dark);
+      margin-bottom: 1rem;
+    }
+
+    .comp-after p {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 1rem;
+    }
+
+    /* ── FOOTER SIMPLE ── */
+    footer {
+      background: #060f09;
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.85rem;
+    }
+
+    @media (min-width: 600px) {
+      header, .comp-after { padding-left: 2rem; padding-right: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER SIMPLE -->
+<header>
+  <div class="hd">
+    <a href="index.html" class="logo">🌳 1000 Árboles · Bellavistas</a>
+  </div>
+</header>
+
+<!-- COMPARACIÓN INTERACTIVA -->
+<section class="s-comparison">
+  <div class="comp-container">
+    <div class="comp-sticky">
+      <!-- Imagen SIN árboles (base) -->
+      <img src="data/images/Aranjuez Olite sin árboles.png" alt="Calle sin árboles" class="comp-image comp-base">
+
+      <!-- Imagen CON árboles (overlay que aparece) -->
+      <img src="data/images/Aranjuez Olite con árboles.png" alt="Calle con árboles" class="comp-image comp-overlay">
+
+      <!-- Texto 1: "esto no tiene por qué ser así" -->
+      <div class="comp-text" id="text1">
+        <h2>Esto no tiene<br>por qué ser así</h2>
+      </div>
+
+      <!-- Texto 2: "podemos tener un barrio mejor" -->
+      <div class="comp-text" id="text2">
+        <h2>Podemos tener<br>un barrio mejor</h2>
+        <p>Planta 1000 árboles en Bellavistas</p>
+      </div>
+    </div>
+
+    <!-- Después del scroll sticky -->
+    <div class="comp-after">
+      <div class="wrap">
+        <h3>Aranjuez Olite: antes y después</h3>
+        <p>Esta es solo una calle. Imaginá cómo quedaría nuestro barrio completo con 1000 árboles nuevos. Lugares más frescos, aire más limpio, un barrio más verde y habitable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Movimiento vecinal autónomo de Bellavistas, Distrito de Tetuán, Madrid.</p>
+</footer>
+
+<script>
+  // Detectar scroll y actualizar opacidad + textos
+  const overlay = document.querySelector('.comp-overlay');
+  const text1 = document.getElementById('text1');
+  const text2 = document.getElementById('text2');
+  const container = document.querySelector('.comp-container');
+  const stickyHeight = window.innerHeight; // altura del viewport
+
+  window.addEventListener('scroll', () => {
+    const containerTop = container.getBoundingClientRect().top;
+    const containerHeight = container.offsetHeight;
+
+    // Posición de scroll relativa al container (0 = arriba, 1 = abajo)
+    const progress = Math.max(0, Math.min(1, -containerTop / (containerHeight - stickyHeight)));
+
+    // Opacidad de la imagen con árboles: crece gradualmente
+    overlay.style.opacity = Math.max(0, (progress - 0.2) / 0.6); // empieza a 20%, completa a 80%
+
+    // Texto 1: aparece temprano, desaparece a mitad
+    text1.style.opacity = Math.max(0, (0.3 - progress) / 0.2);
+
+    // Texto 2: aparece a mitad, se desvanece al final
+    text2.style.opacity = Math.max(0, Math.min(1, (progress - 0.4) / 0.25));
+  });
+</script>
+
+</body>
+</html>
