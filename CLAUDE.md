@@ -162,6 +162,18 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 
 **CSS**: Uso de `position: sticky` en `#story-stage` para fijar el canvas. `clamp()` en tipografía para escalar responsivamente. Gradiente de overlay con `rgba()` para adaptarse a cualquier imagen de fondo.
 
+**Indicador de scroll**:
+- `.scroll-indicator` aparece en la esquina inferior del stage con animación `fadeInArrow`
+- `.scroll-arrow` es un div con border rotado -45° que simula una flecha
+- `@keyframes bounceArrow` anima el movimiento vertical cada 2 segundos
+- Se desvanece automáticamente cuando `p > 0.02` (usuario comienza scroll)
+
+**Colores de textos**:
+- Panel 1: `#FFE066` (amarillo dorado) — problema/denuncia
+- Panel 2: `#A8E6CF` (verde menta) — esperanza/solución
+- Panel 3: `#FF8B94` (rosa salmón) — urgencia/acción
+- Font-weight: 900 (ultra-bold) para máxima legibilidad
+
 **JavaScript**: IIFE sin dependencias que:
 1. Calcula progreso del scroll como fracción (0-1) comparando posición de `#story` contra viewport
 2. Detecta qué beat (fase) está activo según 3 rangos: [0.15, 0.35], [0.35, 0.55], [0.55, 0.75]
@@ -206,10 +218,26 @@ header.classList.toggle('hidden-during-story', inStoryRange);
 ```
 Cambiar `0.95` para que reaparezca antes/después.
 
+**Indicador de scroll** — ocultar/mostrar y ajustar timing:
+```js
+if (p > 0.02) {  // Desaparece tras un 2% de scroll
+  scrollIndicator.style.opacity = '0';
+}
+```
+Cambiar `0.02` para que desaparezca más/menos pronto.
+
+**Colores de textos** — cambiar en CSS:
+```css
+#panel-1 p { color: #FFE066; }  /* amarillo dorado */
+#panel-2 p { color: #A8E6CF; }  /* verde menta */
+#panel-3 p { color: #FF8B94; }  /* rosa salmón */
+```
+
 **Duración de transiciones** — en `.story-panel` (textos) y `#bg-after` (imagen):
 ```css
 .story-panel { transition: opacity 0.5s ease, transform 0.5s ease; }
 #bg-after { transition: opacity 0.8s ease; }
+.scroll-arrow { animation: bounceArrow 2s infinite; }  /* flecha */
 ```
 
 ### Compatibilidad
