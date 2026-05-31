@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1000 Árboles para Bellavistas | Madrid Verde</title>
+  <meta name="description" content="Movimiento vecinal para plantar 1000 árboles en Bellavistas, Madrid. Únete, firma y cambia nuestro barrio.">
+  <meta property="og:title" content="1000 Árboles para Bellavistas">
+  <meta property="og:description" content="Exigimos al Ayuntamiento de Madrid 1000 nuevos árboles en Bellavistas.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #F7F9F7;
+      --white:       #FFFFFF;
+      --border:      #DDE8DF;
+      --text:        #1A2E1B;
+      --muted:       #5A7360;
+      --green:       #2D6A4F;
+      --green-dark:  #1B4332;
+      --green-light: #52B788;
+      --green-pale:  #EBF7EE;
+      --yellow:      #FFD166;
+      --pad:         1.25rem;
+      --max:         520px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(247,249,247,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--green-dark);
+      text-decoration: none;
+    }
+    .btn-hd {
+      background: var(--yellow);
+      color: var(--green-dark);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 0.45rem 1.1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn-hd:hover { opacity: 0.85; }
+
+    /* ── DIVIDER ── */
+    section { border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── INTRO / OBJETIVO ── */
+    .s-intro { padding: 3.5rem 0 3rem; }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--green-light);
+      margin-bottom: 1.1rem;
+    }
+    .s-intro h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 11vw, 4.2rem);
+      line-height: 1.03;
+      color: var(--green-dark);
+      margin-bottom: 1.1rem;
+    }
+    .s-intro h1 span {
+      color: var(--green);
+      display: block;
+    }
+    .hero-lead {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--muted);
+      margin-bottom: 2.25rem;
+    }
+
+    /* 3 inline mini-stats */
+    .intro-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .istat {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 0.4rem 0.75rem;
+      text-align: center;
+    }
+    .istat-n {
+      display: block;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.55rem, 6.5vw, 2.1rem);
+      color: var(--green-dark);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .istat-l {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1.3;
+    }
+
+    /* ── MAPA ── */
+    .s-map { padding: 2.75rem 0 2.25rem; }
+    .map-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--green-light);
+      margin-bottom: 0.7rem;
+    }
+    .s-map h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--green-dark);
+      margin-bottom: 0.45rem;
+    }
+    .map-desc {
+      font-size: 0.87rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.1rem;
+    }
+    .map-frame {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      height: 340px;
+      box-shadow: 0 4px 24px rgba(27,67,50,0.09);
+    }
+    @media (min-width: 600px) { .map-frame { height: 420px; } }
+    .map-frame iframe { width: 100%; height: 100%; border: none; display: block; }
+    .map-open {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+      color: var(--green);
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none;
+    }
+    .map-open:hover { text-decoration: underline; }
+
+    /* ── ESTADÍSTICAS ── */
+    .s-stats {
+      padding: 2.75rem 0;
+      background: var(--green-pale);
+    }
+    .stats-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--green);
+      margin-bottom: 0.7rem;
+    }
+    .s-stats h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--green-dark);
+      margin-bottom: 1.5rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+    .scard {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 0.9rem 1rem;
+    }
+    .scard .big-n {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 10vw, 3.2rem);
+      color: var(--green-dark);
+      line-height: 1;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .scard .big-lbl {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+    .scard .big-ctx {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .scard .pill {
+      display: inline-block;
+      margin-top: 0.6rem;
+      background: var(--green-pale);
+      color: var(--green);
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.18rem 0.6rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── CALL TO ACTION ── */
+    .s-cta {
+      background: var(--green-dark);
+      padding: 3rem 0 3.5rem;
+    }
+    .cta-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--green-light);
+      margin-bottom: 0.7rem;
+    }
+    .s-cta h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 0.55rem;
+    }
+    .cta-lead {
+      font-size: 0.92rem;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.65;
+      margin-bottom: 2rem;
+    }
+
+    /* form box */
+    .sign-box {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 14px;
+      padding: 1.5rem 1.35rem;
+      margin-bottom: 1.75rem;
+    }
+    .sign-box h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: #fff;
+      margin-bottom: 1.2rem;
+    }
+    .field { margin-bottom: 0.85rem; }
+    .field label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green-light);
+      margin-bottom: 0.32rem;
+    }
+    .field input[type="text"],
+    .field input[type="email"] {
+      width: 100%;
+      padding: 0.72rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.17);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.32); }
+    .field input:focus { border-color: var(--green-light); }
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      margin-bottom: 1.1rem;
+    }
+    .check-row input[type="checkbox"] {
+      margin-top: 0.12rem;
+      accent-color: var(--yellow);
+      flex-shrink: 0;
+    }
+    .check-row span {
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+    }
+    .btn-sign {
+      width: 100%;
+      padding: 0.95rem;
+      background: var(--yellow);
+      color: var(--green-dark);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-sign:hover { opacity: 0.9; }
+    .success-box {
+      display: none;
+      text-align: center;
+      padding: 1.5rem 1rem;
+      background: rgba(255,255,255,0.07);
+      border-radius: 10px;
+    }
+    .success-box h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .success-box p { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+
+    /* channel buttons */
+    .channels-title {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 0.75rem;
+    }
+    .channels { display: flex; flex-direction: column; gap: 0.55rem; }
+    .ch-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.88rem 1rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: #fff;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.11);
+      transition: background 0.2s;
+    }
+    .ch-btn:hover { background: rgba(255,255,255,0.12); }
+    .ch-arrow { margin-left: auto; opacity: 0.4; font-size: 0.75rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #060f09;
+      padding: 2.25rem 0 2.5rem;
+      text-align: center;
+    }
+    .f-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.65);
+      display: block;
+      text-decoration: none;
+      margin-bottom: 1rem;
+    }
+    .f-links {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.1rem;
+    }
+    .f-links a {
+      font-size: 0.82rem;
+      color: var(--green-light);
+      text-decoration: none;
+    }
+    .f-links a:hover { text-decoration: underline; }
+    footer p {
+      font-size: 0.73rem;
+      color: rgba(255,255,255,0.22);
+      line-height: 1.65;
+    }
+
+    /* ── FADE-IN ── */
+    .fade {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade.vis { opacity: 1; transform: translateY(0); }
+
+    @media (min-width: 600px) { :root { --pad: 2rem; } }
+    @media (min-width: 900px) { :root { --max: 600px; } }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap hd">
+    <a href="index.html" class="logo">🌳 1000 Árboles · Bellavistas</a>
+    <a href="#firma" class="btn-hd">✍ Firma ya</a>
+  </div>
+</header>
+
+<!-- INTRO / OBJETIVO -->
+<section class="s-intro">
+  <div class="wrap">
+    <p class="tag fade">Movimiento vecinal · Bellavistas, Tetuán · Madrid</p>
+    <h1 class="fade">1.000 árboles<span>para nuestro barrio</span></h1>
+    <p class="hero-lead fade">Bellavistas es uno de los barrios con menor cobertura arbórea de Madrid. Con 534 ubicaciones ya cartografiadas en bandas de aparcamiento, exigimos al Ayuntamiento la plantación de 1.000 nuevos árboles en nuestras calles.</p>
+    <div class="intro-stats fade">
+      <div class="istat">
+        <span class="istat-n">534</span>
+        <span class="istat-l">ubicaciones cartografiadas</span>
+      </div>
+      <div class="istat">
+        <span class="istat-n">847</span>
+        <span class="istat-l">vecinos firmantes</span>
+      </div>
+      <div class="istat">
+        <span class="istat-n">686</span>
+        <span class="istat-l">árboles existentes</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAPA -->
+<section class="s-map">
+  <div class="wrap">
+    <p class="map-tag fade">Nuestra propuesta</p>
+    <h2 class="fade">534 alcorques, calle a calle</h2>
+    <p class="map-desc fade">Puntos verdes: arbolado municipal existente. Puntos naranjas: nuevos alcorques propuestos en plazas de aparcamiento SER.</p>
+    <div class="map-frame fade">
+      <iframe src="mapa.html" title="Mapa interactivo de árboles propuestos en Bellavistas"></iframe>
+    </div>
+    <a class="map-open fade" href="mapa.html" target="_blank">
+      Abrir mapa completo <i class="fas fa-external-link-alt fa-xs"></i>
+    </a>
+  </div>
+</section>
+
+<!-- ESTADÍSTICAS -->
+<section class="s-stats">
+  <div class="wrap">
+    <p class="stats-tag fade">La realidad del barrio</p>
+    <h2 class="fade">Los datos que nos obligan a actuar</h2>
+    <div class="stats-grid">
+      <div class="scard fade">
+        <span class="big-n">78%</span>
+        <div class="big-lbl">calles sin sombra</div>
+        <p class="big-ctx">En las horas centrales, el 78% de la red viaria de Bellavistas no tiene cobertura arbórea.</p>
+      </div>
+      <div class="scard fade">
+        <span class="big-n">2,3</span>
+        <div class="big-lbl">árboles por hectárea</div>
+        <p class="big-ctx">Con 1.000 nuevos llegaríamos a 8,7 árb/ha, superando la media española.</p>
+        <span class="pill">vs 12 media europea</span>
+      </div>
+      <div class="scard fade">
+        <span class="big-n">46°</span>
+        <div class="big-lbl">temp. del asfalto</div>
+        <p class="big-ctx">El dosel de 1.000 árboles bajaría esa cifra hasta 12–15 grados en verano.</p>
+      </div>
+      <div class="scard fade">
+        <span class="big-n">0</span>
+        <div class="big-lbl">nuevos árboles en 5 años</div>
+        <p class="big-ctx">Desde 2019, el Ayuntamiento no ha plantado ningún árbol nuevo de calle en Bellavistas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALL TO ACTION -->
+<section class="s-cta" id="firma">
+  <div class="wrap">
+    <p class="cta-tag fade">Actúa ahora</p>
+    <h2 class="fade">Cada voz<br>cuenta</h2>
+    <p class="cta-lead fade">Añade tu firma al manifiesto que presentaremos ante el Ayuntamiento y la Junta Municipal de Tetuán.</p>
+
+    <div class="sign-box fade">
+      <h3>✍ Firma la petición vecinal</h3>
+      <form id="signForm" onsubmit="submitSign(event)">
+        <div class="field">
+          <label>Nombre y apellidos</label>
+          <input type="text" placeholder="Tu nombre completo" required>
+        </div>
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" placeholder="tucorreo@ejemplo.com" required>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" required>
+          <span>Acepto que mis datos se usen exclusivamente para esta petición vecinal y no sean compartidos con terceros.</span>
+        </div>
+        <button type="submit" class="btn-sign">🌳 Añadir mi firma</button>
+      </form>
+      <div class="success-box" id="successBox">
+        <h4>¡Gracias por firmar!</h4>
+        <p>Tu firma se ha registrado. Comparte esta página con tus vecinos para que el movimiento crezca.</p>
+      </div>
+    </div>
+
+    <p class="channels-title">Más formas de actuar</p>
+    <div class="channels">
+      <a class="ch-btn fade"
+         href="mailto:concejaliamedioambiente@madrid.es?subject=Petici%C3%B3n%3A%201000%20%C3%A1rboles%20en%20Bellavistas&body=Estimados%20se%C3%B1ores%2C%0A%0AComo%20vecino%2Fa%20del%20barrio%20de%20Bellavistas%20(Tetuan%2C%20Madrid)%2C%20les%20exijo%20la%20plantaci%C3%B3n%20de%201.000%20nuevos%20%C3%A1rboles%20en%20las%20calles%20de%20nuestro%20barrio%2C%20tal%20y%20como%20propone%20el%20movimiento%20vecinal%20%221000%20%C3%81rboles%20para%20Bellavistas%22.%0A%0AAtentamente">
+        <i class="fas fa-envelope fa-fw"></i>
+        Email al Ayuntamiento
+        <i class="fas fa-chevron-right ch-arrow"></i>
+      </a>
+      <a class="ch-btn fade"
+         href="https://twitter.com/intent/tweet?text=%231000ArboresParaBellavistas+Exigimos+al+%40AlmeidaMd+y+al+%40Madrid+la+plantaci%C3%B3n+de+1000+%C3%A1rboles+en+Bellavistas.+%23MadridVerde+%23Bellavistas"
+         target="_blank" rel="noopener">
+        <i class="fab fa-twitter fa-fw"></i>
+        Tuitear al alcalde
+        <i class="fas fa-chevron-right ch-arrow"></i>
+      </a>
+      <a class="ch-btn fade"
+         href="https://wa.me/?text=Acabo+de+firmar+por+1000+%C3%A1rboles+en+Bellavistas+%F0%9F%8C%B3+%C2%BFTe+unes%3F+https%3A%2F%2F1000arbolesbellavistas.es"
+         target="_blank" rel="noopener">
+        <i class="fab fa-whatsapp fa-fw"></i>
+        Compartir por WhatsApp
+        <i class="fas fa-chevron-right ch-arrow"></i>
+      </a>
+      <a class="ch-btn fade" href="visualizacion.html">
+        <i class="fas fa-images fa-fw"></i>
+        Ver cómo quedarán las calles
+        <i class="fas fa-chevron-right ch-arrow"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <a href="index.html" class="f-logo">🌳 1000 Árboles · Bellavistas</a>
+    <div class="f-links">
+      <a href="mapa.html">El mapa</a>
+      <a href="visualizacion.html">Visualización</a>
+      <a href="mailto:hola@1000arbolesbellavistas.es">Contacto</a>
+    </div>
+    <p>Movimiento vecinal autónomo de Bellavistas, Distrito de Tetuán, Madrid.</p>
+    <p>© 2025 Asociación Vecinal 1000 Árboles Bellavistas</p>
+  </div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+
+  function submitSign(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.btn-sign');
+    btn.disabled = true;
+    btn.textContent = '⏳ Registrando...';
+    setTimeout(() => {
+      document.getElementById('signForm').style.display = 'none';
+      document.getElementById('successBox').style.display = 'block';
+    }, 1000);
+  }
+</script>
+</body>
+</html>

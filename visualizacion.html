@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualización — 1000 Árboles Bellavistas</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --g1: #0D2818; --g2: #1B4332; --g3: #2D6A4F; --g4: #52B788;
+      --g5: #95D5B2; --g6: #D8F3DC; --yellow: #FFD166;
+      --text: #1A2E1B; --muted: #5A7360;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; color: var(--text); background: #f8faf9; }
+
+    /* ─── NAV ─── */
+    nav { background: var(--g2); padding: .85rem 1.5rem; display: flex;
+      align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25); }
+    .nav-logo { color: #fff; text-decoration: none; font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; display: flex; align-items: center; gap: .5rem; }
+    .nav-back { margin-left: auto; color: rgba(255,255,255,.8); text-decoration: none;
+      font-size: .85rem; font-weight: 700; }
+    .nav-back:hover { color: #fff; }
+
+    /* ─── INTRO ─── */
+    .intro { background: var(--g2); color: #fff; text-align: center; padding: 2.5rem 2rem; }
+    .intro h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,4vw,2.8rem);
+      color: var(--g5); margin-bottom: .75rem; }
+    .intro p { color: rgba(255,255,255,.72); max-width: 680px; margin: 0 auto;
+      font-size: 1.05rem; line-height: 1.75; }
+
+    /* ─── STREET SELECTOR ─── */
+    .selector-bar { background: var(--g1); padding: 1rem 1.5rem; display: flex;
+      align-items: center; gap: .75rem; flex-wrap: wrap; overflow-x: auto; }
+    .sel-label { color: var(--g5); font-size: .8rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .1em; white-space: nowrap; }
+    .sel-btn { padding: .45rem 1.1rem; border-radius: 50px; border: 2px solid rgba(255,255,255,.2);
+      background: transparent; color: rgba(255,255,255,.7); font-family: 'Nunito', sans-serif;
+      font-size: .85rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .sel-btn:hover { border-color: var(--g4); color: #fff; }
+    .sel-btn.active { background: var(--g3); border-color: var(--g4); color: #fff; }
+
+    /* Season toggle */
+    .season-toggle { margin-left: auto; display: flex; gap: .5rem; flex-shrink: 0; }
+    .season-btn { padding: .4rem .75rem; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.2);
+      background: transparent; color: rgba(255,255,255,.65); cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: .8rem; font-weight: 700; transition: all .2s; }
+    .season-btn.active { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.5); color: #fff; }
+
+    /* ─── MAIN STAGE ─── */
+    .stage-wrap { position: relative; width: 100%; user-select: none; }
+    .stage { position: relative; width: 100%; aspect-ratio: 16/7; overflow: hidden;
+      background: #1a3c2e; cursor: ew-resize; }
+    .scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .scene svg { width: 100%; height: 100%; display: block; }
+    .scene-after { clip-path: inset(0 50% 0 0); transition: none; }
+
+    /* Divider */
+    .divider {
+      position: absolute; top: 0; bottom: 0; left: 50%; width: 3px;
+      background: #fff; transform: translateX(-50%); z-index: 10;
+      pointer-events: none; box-shadow: 0 0 12px rgba(0,0,0,.5);
+    }
+    .divider-handle {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: var(--g2); pointer-events: all; cursor: ew-resize;
+      border: 3px solid var(--g4);
+    }
+
+    /* Labels */
+    .scene-label {
+      position: absolute; top: 1rem; padding: .45rem 1rem; border-radius: 50px;
+      font-size: .88rem; font-weight: 800; z-index: 5; pointer-events: none;
+      letter-spacing: .05em; text-transform: uppercase;
+    }
+    .label-before { left: 1rem; background: rgba(0,0,0,.55); color: #fff; }
+    .label-after  { right: 1rem; background: rgba(27,67,50,.85); color: var(--g5); }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+      gap: 1px; background: var(--g2); border-top: 2px solid var(--g3); }
+    .stat-cell { background: #fff; padding: 1.1rem 1rem; text-align: center; }
+    .stat-cell .num { font-family: 'Playfair Display', serif; font-size: 1.8rem;
+      color: var(--g3); display: block; line-height: 1; }
+    .stat-cell .lbl { font-size: .75rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .08em; margin-top: .25rem; display: block; }
+    .stat-cell.highlight .num { color: var(--yellow); }
+    .stat-cell.highlight { background: var(--g2); }
+    .stat-cell.highlight .lbl { color: var(--g5); }
+
+    /* ─── INFO PANEL ─── */
+    .info-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+      padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 768px) { .info-panel { grid-template-columns: 1fr; padding: 1.25rem; } }
+
+    .info-card { background: #fff; border-radius: 16px; padding: 1.5rem;
+      box-shadow: 0 4px 18px rgba(27,67,50,.07); }
+    .info-card h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem;
+      color: var(--g2); margin-bottom: 1rem; }
+    .info-list { list-style: none; }
+    .info-list li { padding: .5rem 0; border-bottom: 1px solid #f0f5f2;
+      display: flex; align-items: flex-start; gap: .6rem; font-size: .9rem; color: var(--muted); }
+    .info-list li:last-child { border-bottom: none; }
+    .info-list .icon { font-size: 1rem; flex-shrink: 0; }
+    .info-list strong { color: var(--text); }
+
+    /* Species badges */
+    .species-grid { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+    .sp-badge { padding: .3rem .8rem; border-radius: 20px; font-size: .78rem; font-weight: 700;
+      color: #fff; display: flex; align-items: center; gap: .3rem; }
+
+    /* Progress toward petition */
+    .petition-bar { background: #fff; border-radius: 16px; padding: 1.5rem;
+      box-shadow: 0 4px 18px rgba(27,67,50,.07); margin: 0 2rem 2rem;
+      max-width: 1160px; margin-left: auto; margin-right: auto; }
+    .petition-bar h3 { font-family: 'Playfair Display', serif; color: var(--g2);
+      margin-bottom: 1rem; }
+    .petition-bar .track { height: 16px; background: var(--g6); border-radius: 8px; overflow: hidden; }
+    .petition-bar .fill { height: 100%; background: linear-gradient(90deg, var(--g3), var(--g4));
+      border-radius: 8px; width: 84.7%; }
+    .petition-bar .meta { display: flex; justify-content: space-between;
+      font-size: .83rem; color: var(--muted); margin-top: .5rem; }
+    .cta-row { text-align: center; padding: 0 2rem 3rem; display: flex;
+      gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn { padding: .9rem 2rem; border-radius: 50px; font-size: 1rem; font-weight: 800;
+      text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
+      transition: all .25s; border: 2px solid transparent; cursor: pointer;
+      font-family: 'Nunito', sans-serif; }
+    .btn-cta { background: var(--g2); color: #fff; }
+    .btn-cta:hover { background: var(--g3); transform: translateY(-2px); }
+    .btn-outline { background: transparent; color: var(--g2); border-color: var(--g3); }
+    .btn-outline:hover { background: var(--g6); transform: translateY(-2px); }
+
+    /* Instruction text */
+    .drag-hint { text-align: center; font-size: .82rem; color: var(--muted);
+      padding: .6rem; background: var(--g6); }
+    .drag-hint strong { color: var(--g3); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">🌳 1000 Árboles · Bellavistas</a>
+  <a href="index.html" class="nav-back">← Volver al inicio</a>
+</nav>
+
+<!-- INTRO -->
+<div class="intro">
+  <h1>Antes y después: nuestras calles con árboles</h1>
+  <p>Arrastra el divisor central para descubrir cómo cambiarían las calles de Bellavistas con 1.000 nuevos árboles. Elige una calle y una estación del año.</p>
+</div>
+
+<!-- SELECTOR -->
+<div class="selector-bar">
+  <span class="sel-label">Calle:</span>
+  <button class="sel-btn active" onclick="selectStreet(0,this)">Bravo Murillo</button>
+  <button class="sel-btn" onclick="selectStreet(1,this)">C/ Alenza</button>
+  <button class="sel-btn" onclick="selectStreet(2,this)">Reina Victoria</button>
+  <button class="sel-btn" onclick="selectStreet(3,this)">C/ Tenerife</button>
+  <button class="sel-btn" onclick="selectStreet(4,this)">C/ Alvarado</button>
+  <div class="season-toggle">
+    <button class="season-btn active" onclick="setSeason('summer',this)">☀️ Verano</button>
+    <button class="season-btn" onclick="setSeason('spring',this)">🌸 Primavera</button>
+    <button class="season-btn" onclick="setSeason('autumn',this)">🍂 Otoño</button>
+  </div>
+</div>
+
+<!-- DRAG HINT -->
+<div class="drag-hint">← <strong>Arrastra el divisor</strong> para comparar ANTES y DESPUÉS →</div>
+
+<!-- STAGE -->
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="scene scene-before" id="beforeScene"></div>
+    <div class="scene scene-after" id="afterScene"></div>
+    <div class="divider" id="divider">
+      <div class="divider-handle">◀▶</div>
+    </div>
+    <div class="scene-label label-before">ANTES 🌡️</div>
+    <div class="scene-label label-after">DESPUÉS 🌳</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat-cell highlight"><span class="num" id="sTreeCount">0</span><span class="lbl">Árboles en esta calle</span></div>
+  <div class="stat-cell"><span class="num" id="sTempDrop">0°C</span><span class="lbl">Reducción de temperatura</span></div>
+  <div class="stat-cell"><span class="num" id="sCO2">0 t</span><span class="lbl">CO₂ absorbido/año</span></div>
+  <div class="stat-cell"><span class="num" id="sShadow">0%</span><span class="lbl">Sombra en la acera</span></div>
+  <div class="stat-cell"><span class="num" id="sSpecies">0</span><span class="lbl">Especies plantadas</span></div>
+</div>
+
+<!-- INFO PANEL -->
+<div class="info-panel">
+  <div class="info-card">
+    <h3 id="streetNameDisplay">Calle de Bravo Murillo</h3>
+    <ul class="info-list" id="streetFacts"></ul>
+  </div>
+  <div class="info-card">
+    <h3>Especies propuestas</h3>
+    <div class="species-grid" id="speciesDisplay"></div>
+    <p style="margin-top:1rem;font-size:.85rem;color:var(--muted);line-height:1.7">Las especies han sido seleccionadas según el
+    <strong>Plan de Arbolado Urbano de Madrid 2024</strong>, priorizando especies resistentes a la sequía y adaptadas
+    al microclima de Bellavistas. Todas las ubicaciones respetan la normativa municipal de separación de servicios y edificaciones.</p>
+  </div>
+</div>
+
+<!-- PETITION BAR -->
+<div class="petition-bar">
+  <h3>🌳 Ayúdanos a conseguir los 1.000 árboles</h3>
+  <div class="track"><div class="fill"></div></div>
+  <div class="meta"><span>847 vecinos firmantes</span><span>Meta: 1.000 firmas</span></div>
+</div>
+<div class="cta-row">
+  <a href="index.html#peticion" class="btn btn-cta">✍ Firma la petición</a>
+  <a href="mapa.html" class="btn btn-outline">🗺 Ver mapa completo</a>
+  <a href="index.html" class="btn btn-outline">🏠 Volver al inicio</a>
+</div>
+
+<script>
+// ─── STREET DATA ───
+const STREETS = [
+  {
+    name: "Calle de Bravo Murillo",
+    width: "wide",
+    trees: 187,
+    tempDrop: "8°C",
+    co2: "3.9 t",
+    shadow: "68%",
+    species: 4,
+    facts: [
+      { icon:"📏", text: "<strong>Longitud:</strong> 1.8 km dentro del barrio (tramo Ríos Rosas → Francos Rodríguez)" },
+      { icon:"🛤️", text: "<strong>Anchura:</strong> 35 metros — suficiente para dos filas de árboles en cada acera" },
+      { icon:"🌡️", text: "<strong>Temperatura máxima registrada</strong> (julio 2023): 46°C en el asfalto" },
+      { icon:"🌳", text: "<strong>Árboles actuales:</strong> 12 · Propuestos: 187 · Incremento: +1.458%" },
+      { icon:"👶", text: "Recorrido diario de <strong>+8.200 personas</strong> incluyendo vecinos, niños y mayores" }
+    ],
+    speciesList: [
+      {name:"Plátano de sombra", color:"#2D6A4F", pct:40},
+      {name:"Sophora japonica", color:"#8BC34A", pct:30},
+      {name:"Jacaranda", color:"#7E57C2", pct:20},
+      {name:"Cercis siliquastrum", color:"#EC407A", pct:10}
+    ]
+  },
+  {
+    name: "Calle de Alenza",
+    width: "medium",
+    trees: 54,
+    tempDrop: "6°C",
+    co2: "1.1 t",
+    shadow: "58%",
+    species: 3,
+    facts: [
+      { icon:"📏", text: "<strong>Longitud:</strong> 420 metros de extremo a extremo" },
+      { icon:"🛤️", text: "<strong>Anchura:</strong> 18 metros — aceras de 4 m en cada lado" },
+      { icon:"🌡️", text: "<strong>Temperatura máxima:</strong> 43°C (pavimento expuesto al sur)" },
+      { icon:"🌳", text: "<strong>Árboles actuales:</strong> 0 · Propuestos: 54 · Calle sin un solo árbol" },
+      { icon:"🏪", text: "Calle comercial con <strong>23 establecimientos</strong> que se beneficiarán del ambiente arbolado" }
+    ],
+    speciesList: [
+      {name:"Sophora japonica", color:"#8BC34A", pct:45},
+      {name:"Cercis siliquastrum", color:"#EC407A", pct:35},
+      {name:"Robinia pseudoacacia", color:"#90A4AE", pct:20}
+    ]
+  },
+  {
+    name: "Calle Reina Victoria",
+    width: "medium",
+    trees: 98,
+    tempDrop: "7°C",
+    co2: "2.1 t",
+    shadow: "62%",
+    species: 3,
+    facts: [
+      { icon:"📏", text: "<strong>Longitud:</strong> 850 metros (N-S, paralela a Bravo Murillo)" },
+      { icon:"🛤️", text: "<strong>Anchura:</strong> 20 metros — acera principal de 5 metros" },
+      { icon:"🌡️", text: "<strong>Temperatura máxima:</strong> 44°C (orientación norte-sur, exposición plena)" },
+      { icon:"🌳", text: "<strong>Árboles actuales:</strong> 3 · Propuestos: 98 (ambas aceras)" },
+      { icon:"🏥", text: "Conecta el <strong>Centro de Salud Bravo Murillo</strong> con el IES Lope de Vega" }
+    ],
+    speciesList: [
+      {name:"Plátano de sombra", color:"#2D6A4F", pct:50},
+      {name:"Jacaranda", color:"#7E57C2", pct:30},
+      {name:"Sophora japonica", color:"#8BC34A", pct:20}
+    ]
+  },
+  {
+    name: "Calle de Tenerife",
+    width: "narrow",
+    trees: 41,
+    tempDrop: "5°C",
+    co2: "0.86 t",
+    shadow: "52%",
+    species: 2,
+    facts: [
+      { icon:"📏", text: "<strong>Longitud:</strong> 380 metros (transversal E-O)" },
+      { icon:"🛤️", text: "<strong>Anchura:</strong> 14 metros — aceras de 3 m: compatible con arbolado pequeño/medio" },
+      { icon:"🌡️", text: "<strong>Temperatura máxima:</strong> 41°C — protegida por orientación E-O" },
+      { icon:"🌳", text: "<strong>Árboles actuales:</strong> 0 · Propuestos: 41 (una acera + maceteros grandes)" },
+      { icon:"🏡", text: "Calle residencial con <strong>predominio de mayores y niños</strong> — alta prioridad social" }
+    ],
+    speciesList: [
+      {name:"Cercis siliquastrum", color:"#EC407A", pct:55},
+      {name:"Robinia pseudoacacia", color:"#90A4AE", pct:45}
+    ]
+  },
+  {
+    name: "Calle de Alvarado",
+    width: "medium",
+    trees: 56,
+    tempDrop: "6°C",
+    co2: "1.2 t",
+    shadow: "57%",
+    species: 3,
+    facts: [
+      { icon:"📏", text: "<strong>Longitud:</strong> 445 metros (transversal E-O)" },
+      { icon:"🛤️", text: "<strong>Anchura:</strong> 16 metros — aceras amplias de 4 metros" },
+      { icon:"🌡️", text: "<strong>Temperatura máxima:</strong> 42°C — exposición moderada" },
+      { icon:"🌳", text: "<strong>Árboles actuales:</strong> 2 · Propuestos: 56 (ambas aceras)" },
+      { icon:"🎓", text: "En el recorrido del <strong>CEIP La Paloma</strong> — zona de alta concentración infantil" }
+    ],
+    speciesList: [
+      {name:"Sophora japonica", color:"#8BC34A", pct:40},
+      {name:"Plátano de sombra", color:"#2D6A4F", pct:35},
+      {name:"Jacaranda", color:"#7E57C2", pct:25}
+    ]
+  }
+];
+
+// ─── SEASON COLORS ───
+const SEASONS = {
+  summer: { sky1:'#4A90D9', sky2:'#87CEEB', canopy1:'#1B6B3A', canopy2:'#2D7A3A',
+            canopy3:'#52B788', leafOpacity:0.95, sunColor:'#FFE066', shadowOpacity:0.25,
+            hotOverlay:0.12 },
+  spring: { sky1:'#85C8E8', sky2:'#B5DFEF', canopy1:'#3A8A45', canopy2:'#52B788',
+            canopy3:'#95D5B2', leafOpacity:0.85, sunColor:'#FFF3A0', shadowOpacity:0.18,
+            hotOverlay:0.0 },
+  autumn: { sky1:'#A0B4C8', sky2:'#C5D5DF', canopy1:'#B5651D', canopy2:'#D2691E',
+            canopy3:'#E8A020', leafOpacity:0.9, sunColor:'#FFD080', shadowOpacity:0.20,
+            hotOverlay:0.0 }
+};
+
+let currentStreet = 0;
+let currentSeason = 'summer';
+
+// ─── SVG SCENE GENERATORS ───
+// Perspective parameters: VP = (700, 230)
+const VP = { x: 700, y: 230 };
+
+function lerpX(near, far, t) { return near + (far - near) * t; }
+
+// Generate a row of perspective trees on one side
+// side: 'left' | 'right', count: number, startX, startBaseY, shrinkFactor
+function makeTrees(count, startX, dirX, startBaseY, startScale, season) {
+  const s = SEASONS[season];
+  let svgParts = '';
+  for (let i = 0; i < count; i++) {
+    const t = i / count;
+    const sc = startScale * Math.pow(0.72, i);
+    const bx = startX + dirX * i * (startScale > 0.7 ? 130 : 90) * (1 - i * 0.06);
+    const by = startBaseY - i * (startBaseY - VP.y - 10) * 0.18;
+    const H  = 110 * sc;
+    const W  = 85 * sc;
+    const Htr = 35 * sc;
+    const Wtr = 10 * sc;
+
+    // Skip if out of bounds
+    if (bx < 50 || bx > 1350) continue;
+
+    // Shadow on ground
+    svgParts += `<ellipse cx="${bx}" cy="${by + 5}" rx="${W * 0.7}" ry="${H * 0.12}" fill="#0D2818" opacity="${s.shadowOpacity * sc}"/>`;
+    // Trunk
+    svgParts += `<rect x="${bx - Wtr/2}" y="${by - Htr}" width="${Wtr}" height="${Htr}" rx="${Wtr/3}" fill="#6B4226"/>`;
+    // Main canopy
+    svgParts += `<ellipse cx="${bx}" cy="${by - Htr - H*0.4}" rx="${W*0.5}" ry="${H*0.45}" fill="${s.canopy1}" opacity="${s.leafOpacity}"/>`;
+    // Secondary canopy
+    svgParts += `<ellipse cx="${bx - W*0.2}" cy="${by - Htr - H*0.55}" rx="${W*0.35}" ry="${H*0.35}" fill="${s.canopy2}" opacity="${s.leafOpacity * 0.9}"/>`;
+    svgParts += `<ellipse cx="${bx + W*0.25}" cy="${by - Htr - H*0.52}" rx="${W*0.3}" ry="${H*0.3}" fill="${s.canopy2}" opacity="${s.leafOpacity * 0.85}"/>`;
+    // Highlight
+    svgParts += `<ellipse cx="${bx + W*0.1}" cy="${by - Htr - H*0.65}" rx="${W*0.22}" ry="${H*0.2}" fill="${s.canopy3}" opacity="${s.leafOpacity * 0.6}"/>`;
+    // Spring blossoms or autumn color spots
+    if (season === 'spring') {
+      for (let j = 0; j < 8; j++) {
+        const ox = bx + (Math.cos(j * 0.78) * W * 0.35);
+        const oy = (by - Htr - H * 0.5) + (Math.sin(j * 0.78) * H * 0.3);
+        svgParts += `<circle cx="${ox}" cy="${oy}" r="${3*sc}" fill="#FFB7C5" opacity=".7"/>`;
+      }
+    } else if (season === 'autumn') {
+      for (let j = 0; j < 6; j++) {
+        const ox = bx + (Math.cos(j * 1.05) * W * 0.4);
+        const oy = (by - Htr - H * 0.4) + (Math.sin(j * 1.05) * H * 0.25);
+        svgParts += `<circle cx="${ox}" cy="${oy}" r="${4*sc}" fill="#E8A020" opacity=".6"/>`;
+      }
+    }
+  }
+  return svgParts;
+}
+
+function makeBuildingWindows(startX, w, startY, floors, perFloor, wW, wH, wCol) {
+  let svg = '';
+  const floorH = (300 - startY) / floors;
+  for (let f = 0; f < floors; f++) {
+    const fy = startY + f * floorH + floorH * 0.15;
+    const usableW = w - 30;
+    const winSpacing = usableW / perFloor;
+    for (let p = 0; p < perFloor; p++) {
+      const wx = startX + 15 + p * winSpacing + (winSpacing - wW) / 2;
+      svg += `<rect x="${wx}" y="${fy}" width="${wW}" height="${wH}" rx="2" fill="${wCol}" opacity="${0.6 + Math.random() * 0.3}"/>`;
+      // Balcony
+      if (f < floors - 1) {
+        svg += `<rect x="${wx - 3}" y="${fy + wH + 2}" width="${wW + 6}" height="4" fill="#8B7355"/>`;
+      }
+    }
+  }
+  return svg;
+}
+
+// ─── BEFORE SCENE ───
+function buildBeforeScene(streetIdx, season) {
+  const s = SEASONS[season];
+  const str = STREETS[streetIdx];
+  const W = str.width; // 'wide'|'medium'|'narrow'
+  const roadW = W === 'wide' ? 420 : W === 'medium' ? 320 : 240;
+  const leftSW = W === 'wide' ? 280 : W === 'medium' ? 190 : 150; // sidewalk width
+  const rightSW = leftSW;
+  const cx = 700; // center
+
+  const leftBldgW = cx - roadW/2 - leftSW;
+  const rightBldgX = cx + roadW/2 + rightSW;
+  const rightBldgW = 1400 - rightBldgX;
+
+  return `<svg viewBox="0 0 1400 580" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${s.sky1}"/>
+      <stop offset="100%" stop-color="${s.sky2}"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8A8A8A"/>
+      <stop offset="100%" stop-color="#656565"/>
+    </linearGradient>
+    <linearGradient id="sidewalk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C8C0A8"/>
+      <stop offset="100%" stop-color="#B0A888"/>
+    </linearGradient>
+    <radialGradient id="hotGlow" cx="50%" cy="0%" r="60%">
+      <stop offset="0%" stop-color="#FF6B1A" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FF6B1A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1400" height="580" fill="url(#sky)"/>
+  <!-- Sun (hot day) -->
+  <circle cx="1250" cy="90" r="55" fill="${s.sunColor}" opacity=".85"/>
+  <circle cx="1250" cy="90" r="80" fill="${s.sunColor}" opacity=".2"/>
+  <!-- Heat haze effect -->
+  <rect width="1400" height="580" fill="url(#hotGlow)" opacity="${1 + s.hotOverlay}"/>
+
+  <!-- Distant buildings silhouette -->
+  <rect x="250" y="155" width="900" height="80" fill="#7A9EB0" opacity=".5" rx="2"/>
+  <rect x="300" y="165" width="60" height="70" fill="#6A8EA0" opacity=".6" rx="1"/>
+  <rect x="420" y="148" width="80" height="87" fill="#7A9EB0" opacity=".5" rx="1"/>
+  <rect x="580" y="155" width="55" height="80" fill="#6A8EA0" opacity=".5" rx="1"/>
+  <rect x="760" y="148" width="70" height="87" fill="#7A9EB0" opacity=".5" rx="1"/>
+  <rect x="920" y="155" width="65" height="80" fill="#6A8EA0" opacity=".5" rx="1"/>
+
+  <!-- Perspective ground convergence -->
+  <polygon points="${cx-roadW/2-leftSW},235 ${cx+roadW/2+rightSW},235 ${cx+roadW/2+rightSW},580 ${cx-roadW/2-leftSW},580" fill="#C0B898"/>
+
+  <!-- ROAD -->
+  <polygon points="${cx-roadW/2},235 ${cx+roadW/2},235 ${cx+roadW/2},580 ${cx-roadW/2},580" fill="url(#road)"/>
+  <!-- Road markings -->
+  <line x1="${cx}" y1="270" x2="${cx}" y2="580" stroke="#FFFF00" stroke-width="4" stroke-dasharray="30,20" opacity=".5"/>
+  <!-- Lane lines -->
+  <line x1="${cx-roadW/4}" y1="280" x2="${cx-roadW/4}" y2="580" stroke="#fff" stroke-width="2" stroke-dasharray="20,25" opacity=".3"/>
+  <line x1="${cx+roadW/4}" y1="280" x2="${cx+roadW/4}" y2="580" stroke="#fff" stroke-width="2" stroke-dasharray="20,25" opacity=".3"/>
+
+  <!-- LEFT SIDEWALK -->
+  <polygon points="${cx-roadW/2-leftSW},235 ${cx-roadW/2},235 ${cx-roadW/2},580 ${cx-roadW/2-leftSW},580" fill="url(#sidewalk)"/>
+  <!-- Sidewalk tile pattern -->
+  <line x1="${cx-roadW/2-leftSW/2}" y1="280" x2="${cx-roadW/2-leftSW/2}" y2="580" stroke="#B0A880" stroke-width="1" opacity=".4"/>
+
+  <!-- RIGHT SIDEWALK -->
+  <polygon points="${cx+roadW/2},235 ${cx+roadW/2+rightSW},235 ${cx+roadW/2+rightSW},580 ${cx+roadW/2},580" fill="url(#sidewalk)"/>
+  <line x1="${cx+roadW/2+rightSW/2}" y1="280" x2="${cx+roadW/2+rightSW/2}" y2="580" stroke="#B0A880" stroke-width="1" opacity=".4"/>
+
+  <!-- LEFT BUILDING -->
+  <rect x="0" y="0" width="${leftBldgW}" height="580" fill="#D6C5A9"/>
+  <!-- Left building detail -->
+  ${makeBuildingWindows(0, leftBldgW, 15, 4, Math.floor(leftBldgW/80), 42, 52, '#A8C4D8')}
+  <!-- Floor divisions -->
+  ${[80,160,240,320].map(y => `<line x1="0" y1="${y}" x2="${leftBldgW}" y2="${y}" stroke="#BFB094" stroke-width="1.5" opacity=".5"/>`).join('')}
+  <!-- Cornice -->
+  <rect x="0" y="0" width="${leftBldgW}" height="12" fill="#E8D8BC"/>
+  <!-- Building shadow on sidewalk -->
+  <polygon points="${leftBldgW},235 ${leftBldgW+50},235 ${leftBldgW+50},580 ${leftBldgW},580" fill="#0D2818" opacity=".08"/>
+
+  <!-- RIGHT BUILDING -->
+  <rect x="${rightBldgX}" y="0" width="${rightBldgW}" height="580" fill="#D0BE9E"/>
+  ${makeBuildingWindows(rightBldgX, rightBldgW, 15, 4, Math.floor(rightBldgW/80), 42, 52, '#A0BCCC')}
+  ${[80,160,240,320].map(y => `<line x1="${rightBldgX}" y1="${y}" x2="1400" y2="${y}" stroke="#BAA98A" stroke-width="1.5" opacity=".5"/>`).join('')}
+  <rect x="${rightBldgX}" y="0" width="${rightBldgW}" height="12" fill="#E0CCAA"/>
+  <polygon points="${rightBldgX-50},235 ${rightBldgX},235 ${rightBldgX},580 ${rightBldgX-50},580" fill="#0D2818" opacity=".08"/>
+
+  <!-- Parked cars left -->
+  <rect x="${cx-roadW/2+20}" y="390" width="90" height="45" rx="8" fill="#C0392B" opacity=".85"/>
+  <rect x="${cx-roadW/2+20}" y="398" width="90" height="18" rx="4" fill="#E74C3C" opacity=".6"/>
+  <rect x="${cx-roadW/2+130}" y="400" width="85" height="42" rx="8" fill="#2980B9" opacity=".85"/>
+  <rect x="${cx-roadW/2+130}" y="407" width="85" height="16" rx="4" fill="#5DADE2" opacity=".6"/>
+
+  <!-- Parked cars right -->
+  <rect x="${cx+roadW/2-105}" y="390" width="88" height="45" rx="8" fill="#27AE60" opacity=".85"/>
+  <rect x="${cx+roadW/2-210}" y="398" width="85" height="43" rx="8" fill="#8E44AD" opacity=".85"/>
+
+  <!-- Person without shade (sweating) -->
+  <circle cx="${cx-roadW/2-leftSW/3}" cy="445" r="12" fill="#F5CBA7"/>
+  <rect x="${cx-roadW/2-leftSW/3-6}" y="457" width="12" height="28" rx="4" fill="#E8A87C"/>
+  <!-- Heat shimmer lines -->
+  <line x1="${cx-roadW/2-leftSW/3+20}" y1="430" x2="${cx-roadW/2-leftSW/3+30}" y2="415" stroke="#FF8C00" stroke-width="1.5" opacity=".3" stroke-dasharray="3,3"/>
+  <line x1="${cx-roadW/2-leftSW/3+35}" y1="430" x2="${cx-roadW/2-leftSW/3+42}" y2="412" stroke="#FF8C00" stroke-width="1.5" opacity=".25" stroke-dasharray="3,3"/>
+
+  <!-- TEMPERATURE BADGE -->
+  <rect x="40" y="520" width="165" height="46" rx="12" fill="rgba(180,60,20,0.85)"/>
+  <text x="125" y="540" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="12" font-weight="800">AHORA EN VERANO</text>
+  <text x="125" y="558" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="13" font-weight="800">Acera: hasta +43°C 🥵</text>
+</svg>`;
+}
+
+// ─── AFTER SCENE ───
+function buildAfterScene(streetIdx, season) {
+  const s = SEASONS[season];
+  const str = STREETS[streetIdx];
+  const W = str.width;
+  const roadW = W === 'wide' ? 420 : W === 'medium' ? 320 : 240;
+  const leftSW = W === 'wide' ? 280 : W === 'medium' ? 190 : 150;
+  const rightSW = leftSW;
+  const cx = 700;
+
+  const leftBldgW = cx - roadW/2 - leftSW;
+  const rightBldgX = cx + roadW/2 + rightSW;
+  const rightBldgW = 1400 - rightBldgX;
+
+  // Tree parameters by street width
+  const treeCount = W === 'wide' ? 7 : W === 'medium' ? 6 : 5;
+  const startScale = W === 'wide' ? 1.0 : W === 'medium' ? 0.85 : 0.72;
+  const leftTreeX = cx - roadW/2 - leftSW * 0.55;
+  const rightTreeX = cx + roadW/2 + rightSW * 0.55;
+
+  return `<svg viewBox="0 0 1400 580" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${s.sky1}"/>
+      <stop offset="100%" stop-color="${s.sky2}"/>
+    </linearGradient>
+    <linearGradient id="road2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7A7A7A"/>
+      <stop offset="100%" stop-color="#5A5A5A"/>
+    </linearGradient>
+    <linearGradient id="sw2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C0B898"/>
+      <stop offset="100%" stop-color="#A8A080"/>
+    </linearGradient>
+    <radialGradient id="treeGlow" cx="50%" cy="100%" r="70%">
+      <stop offset="0%" stop-color="#1B4332" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#1B4332" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1400" height="580" fill="url(#sky2)"/>
+  <!-- Softer sun (trees provide relief) -->
+  <circle cx="1250" cy="90" r="45" fill="${s.sunColor}" opacity=".65"/>
+  <circle cx="1250" cy="90" r="70" fill="${s.sunColor}" opacity=".12"/>
+
+  <!-- Distant buildings (greener now) -->
+  <rect x="250" y="155" width="900" height="80" fill="#6A9E8A" opacity=".4" rx="2"/>
+  <rect x="300" y="165" width="60" height="70" fill="#5A8E7A" opacity=".5" rx="1"/>
+  <rect x="420" y="148" width="80" height="87" fill="#6A9E8A" opacity=".4" rx="1"/>
+  <rect x="580" y="155" width="55" height="80" fill="#5A8E7A" opacity=".4" rx="1"/>
+  <rect x="760" y="148" width="70" height="87" fill="#6A9E8A" opacity=".4" rx="1"/>
+  <rect x="920" y="155" width="65" height="80" fill="#5A8E7A" opacity=".4" rx="1"/>
+  <!-- Green on distant building rooftops -->
+  <ellipse cx="450" cy="148" rx="30" ry="18" fill="${s.canopy2}" opacity=".5"/>
+  <ellipse cx="640" cy="150" rx="25" ry="16" fill="${s.canopy2}" opacity=".45"/>
+
+  <!-- Ground -->
+  <polygon points="${cx-roadW/2-leftSW},235 ${cx+roadW/2+rightSW},235 ${cx+roadW/2+rightSW},580 ${cx-roadW/2-leftSW},580" fill="#C0B898"/>
+
+  <!-- ROAD -->
+  <polygon points="${cx-roadW/2},235 ${cx+roadW/2},235 ${cx+roadW/2},580 ${cx-roadW/2},580" fill="url(#road2)"/>
+  <line x1="${cx}" y1="270" x2="${cx}" y2="580" stroke="#FFFF00" stroke-width="4" stroke-dasharray="30,20" opacity=".5"/>
+  <line x1="${cx-roadW/4}" y1="280" x2="${cx-roadW/4}" y2="580" stroke="#fff" stroke-width="2" stroke-dasharray="20,25" opacity=".3"/>
+  <line x1="${cx+roadW/4}" y1="280" x2="${cx+roadW/4}" y2="580" stroke="#fff" stroke-width="2" stroke-dasharray="20,25" opacity=".3"/>
+
+  <!-- LEFT SIDEWALK (cooler, shaded) -->
+  <polygon points="${cx-roadW/2-leftSW},235 ${cx-roadW/2},235 ${cx-roadW/2},580 ${cx-roadW/2-leftSW},580" fill="url(#sw2)"/>
+  <polygon points="${cx-roadW/2-leftSW},235 ${cx-roadW/2},235 ${cx-roadW/2},580 ${cx-roadW/2-leftSW},580" fill="${s.canopy1}" opacity=".07"/>
+
+  <!-- RIGHT SIDEWALK -->
+  <polygon points="${cx+roadW/2},235 ${cx+roadW/2+rightSW},235 ${cx+roadW/2+rightSW},580 ${cx+roadW/2},580" fill="url(#sw2)"/>
+  <polygon points="${cx+roadW/2},235 ${cx+roadW/2+rightSW},235 ${cx+roadW/2+rightSW},580 ${cx+roadW/2},580" fill="${s.canopy1}" opacity=".07"/>
+
+  <!-- LEFT BUILDING (with climbing plants on balconies) -->
+  <rect x="0" y="0" width="${leftBldgW}" height="580" fill="#D0C3A5"/>
+  ${makeBuildingWindows(0, leftBldgW, 15, 4, Math.floor(leftBldgW/80), 42, 52, '#A8C4D8')}
+  ${[80,160,240,320].map(y => `<line x1="0" y1="${y}" x2="${leftBldgW}" y2="${y}" stroke="#BFB094" stroke-width="1.5" opacity=".5"/>`).join('')}
+  <rect x="0" y="0" width="${leftBldgW}" height="12" fill="#E8D8BC"/>
+  <!-- Green on building -->
+  <ellipse cx="${leftBldgW * 0.3}" cy="75" rx="22" ry="14" fill="${s.canopy2}" opacity=".5"/>
+  <ellipse cx="${leftBldgW * 0.6}" cy="155" rx="18" ry="12" fill="${s.canopy2}" opacity=".45"/>
+  <ellipse cx="${leftBldgW * 0.8}" cy="235" rx="16" ry="10" fill="${s.canopy3}" opacity=".5"/>
+
+  <!-- RIGHT BUILDING -->
+  <rect x="${rightBldgX}" y="0" width="${rightBldgW}" height="580" fill="#CCC0A0"/>
+  ${makeBuildingWindows(rightBldgX, rightBldgW, 15, 4, Math.floor(rightBldgW/80), 42, 52, '#A0BCCC')}
+  ${[80,160,240,320].map(y => `<line x1="${rightBldgX}" y1="${y}" x2="1400" y2="${y}" stroke="#BAA98A" stroke-width="1.5" opacity=".5"/>`).join('')}
+  <rect x="${rightBldgX}" y="0" width="${rightBldgW}" height="12" fill="#DCCAAA"/>
+  <ellipse cx="${rightBldgX + rightBldgW * 0.3}" cy="70" rx="20" ry="13" fill="${s.canopy2}" opacity=".5"/>
+  <ellipse cx="${rightBldgX + rightBldgW * 0.65}" cy="150" rx="18" ry="11" fill="${s.canopy2}" opacity=".45"/>
+
+  <!-- TREES LEFT ROW (perspective: move slightly right toward VP) -->
+  ${makeTrees(treeCount, leftTreeX, 0.08, 490, startScale, season)}
+
+  <!-- TREES RIGHT ROW (perspective: move slightly left toward VP) -->
+  ${makeTrees(treeCount, rightTreeX, -0.08, 490, startScale, season)}
+
+  <!-- Canopy light dapples on sidewalk -->
+  <ellipse cx="${cx-roadW/2-leftSW*0.4}" cy="530" rx="45" ry="18" fill="${s.sunColor}" opacity=".12"/>
+  <ellipse cx="${cx-roadW/2-leftSW*0.7}" cy="470" rx="35" ry="12" fill="${s.sunColor}" opacity=".1"/>
+  <ellipse cx="${cx+roadW/2+rightSW*0.4}" cy="530" rx="45" ry="18" fill="${s.sunColor}" opacity=".12"/>
+  <ellipse cx="${cx+roadW/2+rightSW*0.7}" cy="470" rx="35" ry="12" fill="${s.sunColor}" opacity=".1"/>
+
+  <!-- Parked cars left -->
+  <rect x="${cx-roadW/2+20}" y="390" width="90" height="45" rx="8" fill="#C0392B" opacity=".85"/>
+  <rect x="${cx-roadW/2+130}" y="400" width="85" height="42" rx="8" fill="#2980B9" opacity=".85"/>
+
+  <!-- Parked cars right -->
+  <rect x="${cx+roadW/2-105}" y="390" width="88" height="45" rx="8" fill="#27AE60" opacity=".85"/>
+  <rect x="${cx+roadW/2-210}" y="398" width="85" height="43" rx="8" fill="#8E44AD" opacity=".85"/>
+
+  <!-- Persons in the shade (happy!) -->
+  <circle cx="${cx-roadW/2-leftSW/3}" cy="445" r="12" fill="#F5CBA7"/>
+  <rect x="${cx-roadW/2-leftSW/3-6}" y="457" width="12" height="28" rx="4" fill="#5DADE2"/>
+  <!-- Bird in tree -->
+  <ellipse cx="${leftTreeX - 15}" cy="${490 - 110 * startScale - 15 * startScale}" rx="6" ry="4" fill="#2C3E50" opacity=".7"/>
+  <ellipse cx="${leftTreeX - 10}" cy="${490 - 110 * startScale - 17 * startScale}" rx="3" ry="2" fill="#2C3E50" opacity=".7"/>
+
+  <!-- TEMPERATURE BADGE (cool) -->
+  <rect x="40" y="520" width="165" height="46" rx="12" fill="rgba(27,106,79,0.88)"/>
+  <text x="125" y="540" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="12" font-weight="800">CON ÁRBOLES</text>
+  <text x="125" y="558" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="13" font-weight="800">Acera: +29°C (-14°C) 😎</text>
+
+  <!-- CO2 badge -->
+  <rect x="40" y="468" width="150" height="42" rx="10" fill="rgba(45,106,79,0.8)"/>
+  <text x="115" y="484" text-anchor="middle" fill="white" font-family="Nunito,sans-serif" font-size="11" font-weight="800">🌿 +CO₂ ABSORBIDO</text>
+  <text x="115" y="500" text-anchor="middle" fill="${s.sunColor}" font-family="Nunito,sans-serif" font-size="12" font-weight="800">${str.co2} / año en esta calle</text>
+</svg>`;
+}
+
+// ─── RENDER SCENE ───
+function renderScene() {
+  const str = STREETS[currentStreet];
+  const beforeEl = document.getElementById('beforeScene');
+  const afterEl = document.getElementById('afterScene');
+  beforeEl.innerHTML = buildBeforeScene(currentStreet, currentSeason);
+  afterEl.innerHTML  = buildAfterScene(currentStreet, currentSeason);
+  updateStats(str);
+  updateInfo(str);
+  // Reset divider to 50%
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  setPosition(rect.width * 0.5, rect.width);
+}
+
+function updateStats(str) {
+  document.getElementById('sTreeCount').textContent = str.trees;
+  document.getElementById('sTempDrop').textContent = str.tempDrop;
+  document.getElementById('sCO2').textContent = str.co2;
+  document.getElementById('sShadow').textContent = str.shadow;
+  document.getElementById('sSpecies').textContent = str.species;
+}
+
+function updateInfo(str) {
+  document.getElementById('streetNameDisplay').textContent = str.name;
+  const ul = document.getElementById('streetFacts');
+  ul.innerHTML = str.facts.map(f =>
+    `<li><span class="icon">${f.icon}</span><span>${f.text}</span></li>`
+  ).join('');
+  const sg = document.getElementById('speciesDisplay');
+  sg.innerHTML = str.speciesList.map(sp =>
+    `<div class="sp-badge" style="background:${sp.color}">${sp.name} · ${sp.pct}%</div>`
+  ).join('');
+}
+
+// ─── SLIDER DRAG ───
+let isDragging = false;
+let stageRect;
+
+function setPosition(x, width) {
+  const w = width || stageRect?.width || document.getElementById('stage').offsetWidth;
+  const pct = Math.max(3, Math.min(97, (x / w) * 100));
+  document.getElementById('afterScene').style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+  document.getElementById('divider').style.left = pct + '%';
+}
+
+const stage = document.getElementById('stage');
+const divider = document.getElementById('divider');
+
+function startDrag(e) {
+  isDragging = true;
+  stageRect = stage.getBoundingClientRect();
+  e.preventDefault();
+}
+function moveDrag(e) {
+  if (!isDragging) return;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  setPosition(clientX - stageRect.left);
+}
+function endDrag() { isDragging = false; }
+
+divider.addEventListener('mousedown', startDrag);
+stage.addEventListener('mousedown', e => { isDragging = true; stageRect = stage.getBoundingClientRect(); moveDrag(e); });
+document.addEventListener('mousemove', moveDrag);
+document.addEventListener('mouseup', endDrag);
+divider.addEventListener('touchstart', startDrag, { passive: false });
+document.addEventListener('touchmove', moveDrag, { passive: true });
+document.addEventListener('touchend', endDrag);
+
+// ─── CONTROLS ───
+function selectStreet(idx, btn) {
+  currentStreet = idx;
+  document.querySelectorAll('.sel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderScene();
+}
+
+function setSeason(season, btn) {
+  currentSeason = season;
+  document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderScene();
+}
+
+// ─── INIT ───
+window.addEventListener('load', () => { renderScene(); });
+window.addEventListener('resize', () => {
+  const s = document.getElementById('stage');
+  setPosition(s.offsetWidth * 0.5, s.offsetWidth);
+});
+</script>
+</body>
+</html>

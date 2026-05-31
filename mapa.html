@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa · 1000 Árboles Bellavistas</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Datos locales — no requieren servidor ni red -->
+  <script src="data/js/arboles_existentes.js"></script>
+  <script src="data/js/aceras.js"></script>
+  <script src="data/js/arboles_propuestos.js"></script>
+
+  <style>
+    :root {
+      --g1:#0D2818; --g2:#1B4332; --g3:#2D6A4F; --g4:#52B788;
+      --earth:#9C6B2A; --orange:#E8730A; --orange-d:#B85600;
+      --text:#1A2E1B; --muted:#5A7360; --line:#e4e4e4;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Nunito', system-ui, -apple-system, "Segoe UI", sans-serif; }
+    #map { position: absolute; inset: 0; background: #f3f1ec; }
+
+    /* ── Barra superior ── */
+    .topbar {
+      position: absolute; top: 0; left: 0; right: 0; height: 44px; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px; background: rgba(255,255,255,.93);
+      border-bottom: 1px solid var(--line); backdrop-filter: blur(8px);
+    }
+    .topbar .brand {
+      text-decoration: none; color: var(--g2);
+      font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.05rem;
+      display: flex; align-items: center; gap: .4rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 72%;
+    }
+    .topbar .brand .leaf { font-family: 'Nunito', sans-serif; }
+    .topbar .back {
+      color: var(--muted); font-weight: 700; font-size: .82rem;
+      text-decoration: none; white-space: nowrap; flex: none;
+    }
+    .topbar .back:hover { color: var(--g3); }
+
+    /* ── Leyenda ── */
+    .legend {
+      position: absolute; left: 12px; bottom: 22px; z-index: 1000;
+      background: rgba(255,255,255,.95); border: 1px solid var(--line);
+      border-radius: 10px; padding: 10px 13px; color: var(--text);
+      box-shadow: 0 2px 12px rgba(0,0,0,.14); max-width: 78vw;
+    }
+    .legend h2 {
+      font-size: .7rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--muted); margin-bottom: 7px;
+    }
+    .legend .row { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: .82rem; }
+    .legend .row b { font-weight: 700; }
+    .legend .row .n { color: var(--muted); font-weight: 600; }
+    .legend .dot { width: 13px; height: 13px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px rgba(0,0,0,.06); }
+    .legend .sq  { width: 13px; height: 13px; border-radius: 3px; flex: none; }
+
+    .leaflet-top { margin-top: 44px; }
+
+    /* ── Popups ── */
+    .leaflet-popup-content-wrapper {
+      border-radius: 11px; box-shadow: 0 6px 20px rgba(0,0,0,.18);
+      font-family: 'Nunito', sans-serif;
+    }
+    .leaflet-popup-content { margin: 0; padding: 0; line-height: 1.35; }
+    .leaflet-popup-tip { box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+    .tp { padding: 11px 14px 12px; border-left: 4px solid #ccc; }
+    .tp-exist { border-left-color: var(--g3); }
+    .tp-prop  { border-left-color: var(--orange); }
+    .tp-h { font-weight: 800; font-size: .95rem; color: var(--g2); }
+    .tp-prop .tp-h { color: var(--orange-d); }
+    .tp-meta { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+    .tp-s { font-size: .85rem; color: #333; margin-top: 6px; }
+    .tp-s em { color: var(--g3); font-style: italic; font-weight: 600; }
+    .tp-list { margin: 5px 0 0; padding-left: 1.15em; font-size: .8rem; color: #444; }
+    .tp-list li { margin: 2px 0; }
+    .tp-list em { color: var(--earth); font-style: italic; }
+
+    /* ── Móvil ── */
+    @media (max-width: 480px) {
+      .topbar .brand { font-size: .95rem; }
+      .legend { left: 8px; bottom: 18px; padding: 8px 10px; }
+      .legend .row { font-size: .78rem; margin: 3px 0; }
+      .legend h2 { font-size: .66rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="brand"><span class="leaf">🌳</span> 1000 Árboles · Bellavistas</a>
+  <a href="index.html" class="back">← Volver</a>
+</div>
+
+<div id="map"></div>
+
+<div class="legend">
+  <h2>Qué ves en el mapa</h2>
+  <div class="row"><span class="dot" style="background:#7FA07C"></span><b>Árboles existentes</b> <span class="n" id="nE"></span></div>
+  <div class="row"><span class="dot" style="background:#2ECF4B"></span><b>Árboles propuestos</b> <span class="n" id="nP"></span></div>
+  <div class="row"><span class="sq" style="background:#D9CFC2;border:1px solid #9C8B7A"></span><b>Aceras</b></div>
+</div>
+
+<script>
+const map = L.map('map', { center:[40.4462,-3.6980], zoom:15, zoomControl:true });
+
+// Capas base intercambiables: mapa con nombres de calle (Carto) y foto satélite (Esri)
+const baseMapa = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'© OpenStreetMap © CARTO', subdomains:'abcd', maxZoom:21
+}).addTo(map);
+const baseSatelite = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution:'Imagery © Esri, Maxar, Earthstar Geographics', maxZoom:21, maxNativeZoom:19
+});
+L.control.layers({ 'Mapa': baseMapa, 'Satélite': baseSatelite }, null,
+                 { position:'topright', collapsed:false }).addTo(map);
+
+// Pane para aceras, por debajo de los árboles
+map.createPane('acerasPane');
+map.getPane('acerasPane').style.zIndex = 350;
+const cvsA = L.canvas({ pane:'acerasPane', padding:0.5 });
+// tolerance: amplía el área de toque alrededor de cada punto (móvil)
+const cvs  = L.canvas({ padding:0.5, tolerance:8 });
+
+const gA = L.layerGroup().addTo(map);  // aceras
+const gE = L.layerGroup().addTo(map);  // árboles existentes
+const gP = L.layerGroup().addTo(map);  // árboles propuestos (sobre plazas SER)
+
+const POPUP_OPTS = {
+  maxWidth: 260, closeButton: true,
+  autoPanPaddingTopLeft: [14, 54], autoPanPaddingBottomRight: [14, 14]
+};
+
+// Copa a escala: cada árbol trae su diámetro de copa (m) en props.copa. Se dibuja
+// con un radio en píxeles equivalente a ese diámetro al zoom actual, nunca por
+// debajo de un mínimo visible (FLOOR_PX) para que se vea en la vista general y
+// crezca hasta su tamaño real al acercar.
+const FLOOR_PX = 3.5;          // radio mínimo en píxeles
+const COPA_DEF_EXIST = 3;      // diámetro por defecto si faltara props.copa (m)
+const COPA_DEF_PROP  = 7;
+function mppNow() {
+  const lat = map.getCenter().lat;
+  return 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, map.getZoom());
+}
+function copaPx(diamM) {        // diámetro de copa (m) → radio en píxeles
+  return Math.max(FLOOR_PX, (diamM / 2) / mppNow());
+}
+const nf = new Intl.NumberFormat('es-ES');
+
+// ── HTML de los popups ──
+function popupExistente(props) {
+  let especie;
+  if (props && props.comun && props.species)
+                                   especie = props.comun + ' <em>(' + props.species + ')</em>';
+  else if (props && props.species) especie = '<em>' + props.species + '</em>';
+  else if (props && props.comun)   especie = props.comun;
+  else if (props && props.genus)   especie = 'Género: <em>' + props.genus + '</em>';
+  else                             especie = 'Especie no catalogada';
+  const det = [];
+  if (props && props.altura) det.push('Altura ≈ ' + props.altura + ' m');
+  if (props && props.copa)   det.push('copa ≈ ' + props.copa + ' m');
+  const meta = det.length ? '<div class="tp-meta">' + det.join(' · ') + '</div>' : '';
+  return '<div class="tp tp-exist"><div class="tp-h">Árbol existente</div>'
+       + '<div class="tp-s">' + especie + '</div>' + meta + '</div>';
+}
+function popupPropuesto(props) {
+  let especie;
+  if (props && props.comun && props.species)
+                                   especie = props.comun + ' <em>(' + props.species + ')</em>';
+  else if (props && props.species) especie = '<em>' + props.species + '</em>';
+  else                             especie = 'Especie propuesta';
+  const det = ['sobre plaza SER'];
+  if (props && props.copa) det.unshift('copa ≈ ' + props.copa + ' m');
+  return '<div class="tp tp-prop"><div class="tp-h">Árbol propuesto</div>'
+       + '<div class="tp-s">' + especie + '</div>'
+       + '<div class="tp-meta">' + det.join(' · ') + '</div></div>';
+}
+
+// ── Aceras (cartografía municipal) ──
+function renderAceras() {
+  const fc = window.ACERAS;
+  if (!fc) return;
+  L.geoJSON(fc, {
+    pane:'acerasPane', renderer: cvsA,
+    style: () => ({ color:'#9C8B7A', weight:.5, fillColor:'#D9CFC2', fillOpacity:.5 }),
+    interactive: false
+  }).addTo(gA);
+}
+
+// ── Árboles existentes (inventario municipal) — copa verde apagado ──
+function renderExisting() {
+  const fc = window.OSM_TREES;
+  if (!fc) return;
+  fc.features.forEach(f => {
+    const [lon, lat] = f.geometry.coordinates;
+    const d = (f.properties && f.properties.copa) || COPA_DEF_EXIST;
+    const m = L.circleMarker([lat, lon], {
+      renderer: cvs, radius: copaPx(d),
+      fillColor:'#7FA07C', color:'#5C7A57', weight:1, fillOpacity:.6
+    }).bindPopup(popupExistente(f.properties), POPUP_OPTS);
+    m._copaM = d;
+    m.addTo(gE);
+  });
+}
+
+// ── Árboles propuestos (alcorques en bandas SER) — copa verde vivo ──
+function renderProposed() {
+  const fc = window.PROPUESTOS;
+  if (!fc) return;
+  fc.features.forEach(f => {
+    const [lon, lat] = f.geometry.coordinates;
+    const d = (f.properties && f.properties.copa) || COPA_DEF_PROP;
+    const m = L.circleMarker([lat, lon], {
+      renderer: cvs, radius: copaPx(d),
+      fillColor:'#2ECF4B', color:'#159E2E', weight:1, fillOpacity:.75
+    }).bindPopup(popupPropuesto(f.properties), POPUP_OPTS);
+    m._copaM = d;
+    m.addTo(gP);
+  });
+}
+
+renderAceras();
+renderExisting();
+renderProposed();
+
+// Conteos en la leyenda
+const nE = (window.OSM_TREES  && window.OSM_TREES.features.length)  || 0;
+const nP = (window.PROPUESTOS && window.PROPUESTOS.features.length) || 0;
+document.getElementById('nE').textContent = '(' + nf.format(nE) + ')';
+document.getElementById('nP').textContent = '(' + nf.format(nP) + ')';
+
+// Reescalar las copas al cambiar el zoom (cada árbol según su propio diámetro)
+map.on('zoomend', () => {
+  gE.eachLayer(m => m.setRadius && m.setRadius(copaPx(m._copaM || COPA_DEF_EXIST)));
+  gP.eachLayer(m => m.setRadius && m.setRadius(copaPx(m._copaM || COPA_DEF_PROP)));
+});
+</script>
+
+</body>
+</html>
