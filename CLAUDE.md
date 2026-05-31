@@ -171,10 +171,10 @@ Después del story, una sección puente (`s-bridge`) reintroduce el título "1.0
 
 ### Imágenes utilizadas
 
-- `data/images/antes%20sin%20%C3%A1rboles.PNG` — Foto de calle real de Bellavistas sin árboles (problema)
-- `data/images/despu%C3%A9s%20con%20%C3%A1rboles.png` — Foto de la misma calle con árboles plantados (solución)
+- `data/images/antes-sin-arboles.png` — Foto de calle real de Bellavistas sin árboles (problema)
+- `data/images/despues-con-arboles.png` — Foto de la misma calle con árboles plantados (solución)
 
-Los nombres contienen espacios y caracteres especiales; las URLs están codificadas (espacio = `%20`, á = `%C3%A1`).
+Los nombres se han simplificado (sin acentos ni espacios) para máxima compatibilidad con navegadores y servidores web.
 
 ### Editables
 
